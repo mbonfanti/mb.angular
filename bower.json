@@ -1,0 +1,21 @@
+{
+  "name": "mb.angular",
+  "description": "mb.angular",
+  "main": "mb.all.js",
+  "authors": [
+    "<Matteo Bonfanti>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "AngularJS",
+    "MB"
+  ],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
