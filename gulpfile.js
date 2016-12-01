@@ -28,6 +28,7 @@ function prapareTemplater() {
 gulp.task('mb-modules', function () {
 
     return gulp.src([
+        "src/mb.lib.js",
         "src/mb.angular.js",
         "src/mb.angular.filters.js",
         "src/services",
