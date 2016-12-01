@@ -1,4 +1,5 @@
-angular.module("mb.angular", ['mb.angular.templates','mb.angular.components'])
+angular.module("mb.angular", ['mb.angular.templates', 'mb.angular.components']);
+
 angular.module("mb.angular").filter('filtraTerms', function () {
 
     return function (items, idterm) {

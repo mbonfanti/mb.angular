@@ -12,7 +12,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>32d34e3d-03d3-49e9-b9eb-a4d93ec1de49</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>server.js</StartupFile>
+    <StartupFile>mb.all.js</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="gulpfile.js" />
+    <Compile Include="mb.all.js" />
     <Compile Include="server.js" />
     <Compile Include="src\Components\mb.angular.components.js" />
     <Compile Include="src\mb.angular.js" />
@@ -47,6 +48,8 @@
     <Compile Include="src\Services\mb.angular.service.item.js" />
     <Compile Include="src\Services\mb.angular.service.common.js" />
     <Compile Include="src\Services\mb.angular.service.base.js" />
+    <Content Include=".gitattributes" />
+    <Content Include=".gitignore" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="src\Components\Bookmark\Bookmarks.html" />
