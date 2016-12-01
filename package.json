@@ -1,0 +1,27 @@
+{
+  "name": "mb.angular",
+  "version": "0.0.0",
+  "description": "mb.angular",
+  "author": {
+    "name": "Administrator"
+  },
+  "dependencies": {
+   
+  },
+  "devDependencies": {
+    "add-stream": "^1.0.0",
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-angular-templatecache": "^2.0.0",
+    "gulp-cli": "^1.2.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-cssmin": "^0.1.7",
+    "gulp-debug": "^3.0.0",
+    "gulp-htmlmin": "^3.0.0",
+    "gulp-minify-html": "^1.0.6",
+    "gulp-uglify": "^2.0.0",
+    "merge-stream": "^1.0.1",
+    "gulp-util": "^3.0.7",
+    "gulp-watch": "^4.3.11"
+  }
+}
