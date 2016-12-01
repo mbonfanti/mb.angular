@@ -1,5 +1,6 @@
 {
   "name": "mb.angular",
+  "version": "0.0.1",
   "description": "mb.angular",
   "main": "mb.all.js",
   "authors": [
