@@ -64,7 +64,7 @@
             headers: baseSvc.headers
         });
     }
-    factory.chekPermissionOnWeb = function (w, l, a, p) {
+    factory.chekPermissionOnWeb = function (w, a, p) {
         /*
          * Controlla se la lista di destinazione contiene il permesso che passiamo come paramentro
          * chekPermissionOnList(webUrl,'Documents','i:0#.f|membership|jdoe@tenant.onmicrosoft.com','editListItems')

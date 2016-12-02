@@ -1931,7 +1931,7 @@ angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', funct
             headers: baseSvc.headers
         });
     }
-    factory.chekPermissionOnWeb = function (w, l, a, p) {
+    factory.chekPermissionOnWeb = function (w, a, p) {
         /*
          * Controlla se la lista di destinazione contiene il permesso che passiamo come paramentro
          * chekPermissionOnList(webUrl,'Documents','i:0#.f|membership|jdoe@tenant.onmicrosoft.com','editListItems')
@@ -2629,6 +2629,89 @@ angular.module("mb.angular.components").component('userBadge', {
 });
 
 
+angular.module("mb.angular.components", ['mb.angular', 'mb.angular.templates'])
+
+angular.module("mb.angular.components").directive('showOnHover', function () {
+    return {
+        restrict: 'AE',
+        link: function (scope, element, attrs) {
+            var elemento = attrs.elemento;
+            if (!elemento) { elemento = 'div' }
+            element.hide();
+            element.closest(elemento).bind('mouseenter', function () {
+                element.show();
+            });
+            element.closest(elemento).bind('mouseleave', function () {
+                element.hide();
+            });
+        }
+    };
+})
+angular.module("mb.angular.components").directive('showOnRowHover', function () {
+    return {
+        restrict: 'AE',
+        link: function (scope, element, attrs) {
+
+            element.closest('tr').bind('mouseenter', function () {
+                element.show();
+            });
+            element.closest('tr').bind('mouseleave', function () {
+                element.hide();
+            });
+        }
+    };
+})
+angular.module("mb.angular.components").directive('editPanelWeb', function () {
+    return {
+        restrict: 'AE',
+        template: '<span ng-transclude ng-if="$ctrl.permission"></span><div ng-if="$ctrl.error">{{ $ctrl.errorMessage }}</div>',
+        transclude: true,
+        controlllerAs: '$ctrl',
+        scope: {
+            perm: '@',
+            user: '@'
+        },
+        controller: function (permSvc, logSvc) {
+            var ctrl = this;
+            debugger
+            ctrl.permission = false;
+            ctrl.$onInit = function (changesObj) {
+                permSvc.chekPermissionOnWeb(_spPageContextInfo.webAbsoluteUrl, mb.sp.user.LoginName, ctrl.perm)
+                    .then(function (value) {
+                        ctrl.permission = value
+                    }, function (err) {
+                        logSvc.logError(_spPageContextInfo.webAbsoluteUrl, 'Component - EditPanel', err, '', true, false)
+                    })
+            }
+        }
+    };
+})
+angular.module("space.app").component('editPanel', {
+    // Use: <edit-panel obj="mod.item" list="Announcements" perm="editListItems"></edit-panel>
+    template: '<span ng-transclude ng-if="$ctrl.permission"></span><div ng-if="$ctrl.error">{{ $ctrl.errorMessage }}</div>',
+    transclude: true,
+    bindings: {
+        obj: '<',
+        list: '@',
+        perm: '@'
+    },
+    controller: function (permSvc, logSvc) {
+        var ctrl = this;
+        ctrl.permission = false;
+        ctrl.$onChanges = function (changesObj) {
+            if (changesObj.obj.currentValue !== undefined) {
+
+                permSvc.chekPermissionOnList(_spPageContextInfo.webAbsoluteUrl, ctrl.list, mb.sp.user.LoginName, ctrl.perm)
+                    .then(function (value) {
+                        ctrl.permission = value
+                    }, function (err) {
+                        logSvc.logError(_spPageContextInfo.webAbsoluteUrl, 'Component - EditPanel', err, '', true, false)
+                    })
+            }
+        }
+    }
+
+});
 angular.module('mb.angular.templates', []).run(['$templateCache', function($templateCache) {$templateCache.put('Bookmark/Bookmarks.html','<div class="mcl-add-bookmark pull-right">\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="$ctrl.isFollow" ng-click="$ctrl.follow(false)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon mcl-full-icon"></span>\r\n        <span class="mcl-bookmark-txt">remove bookmark</span>\r\n    </a>\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="!$ctrl.isFollow" ng-click="$ctrl.follow(true)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon"></span>\r\n        <span class="mcl-bookmark-txt">add bookmark</span>\r\n    </a>\r\n</div>');
 $templateCache.put('Like/Like.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');
 $templateCache.put('UserBadge/userBadge.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');}]);

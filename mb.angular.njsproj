@@ -32,6 +32,7 @@
   <ItemGroup>
     <Compile Include="gulpfile.js" />
     <Compile Include="mb.all.js" />
+    <Compile Include="src\Components\mb.angular.components.security.js" />
     <Compile Include="src\Components\mb.angular.components.js" />
     <Compile Include="src\mb.angular.js" />
     <Compile Include="src\mb.angular.filters.js" />
