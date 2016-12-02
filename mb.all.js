@@ -2265,6 +2265,27 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
             }
         });
     }
+
+    factory.getUpsCurrentUserObj = function (w, filter) {
+        var deferred = $q.defer();
+        factory.getUpsCurrentUser(w, filter)
+            .then(function (data) {
+                var temp = data.data.d;
+                $.each(temp.UserProfileProperties.results, function (index, result) {
+                    temp[result.Key] = result.Value
+                });
+
+                deferred.resolve(temp);
+            },
+            function (error) {
+                // Non esiste, creiamolo
+                console.log(error)
+                deferred.reject(error);
+            });
+
+        return deferred.promise;
+    };
+   
     return factory;
 }])
 angular.module("mb.angular").factory("adUserSvc", ['commonSvc', 'baseSvc', '$q', '$http', function (commonSvc, baseSvc, $q, $http) {
