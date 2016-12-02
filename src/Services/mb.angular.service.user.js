@@ -170,7 +170,6 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
     }
     factory.getUpsCurrentUser = function (w, filter) {
         return baseSvc.getRestFilter(w + "/_api/SP.UserProfiles.PeopleManager/GetMyProperties", filter)
-
     };
     factory.getUpsCurrentUserObj = function (w, filter) {
         var deferred = $q.defer();

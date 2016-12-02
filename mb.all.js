@@ -1897,6 +1897,7 @@ angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', funct
 
     // PERMISSION ITEM
     factory.getListUserEffectivePermissions = function (w, l, a) {
+
         var endpointUrl = w + "/_api/web/lists/getbytitle('" + l + "')/getusereffectivepermissions(@u)?@u='" + encodeURIComponent(a) + "'";
 
         return $http({
@@ -1939,7 +1940,7 @@ angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', funct
         var deferred = $q.defer();
         factory.getWebUserEffectivePermissions(w, a)
         .success(function (data) {
-            deferred.resolve(factory.findPermission(data.d.GetUserEffectivePermissions));
+            deferred.resolve(factory.findPermission(data.d.GetUserEffectivePermissions, p));
 
         }).error(function (data) {
             deferred.reject(data);
@@ -2267,7 +2268,6 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
     }
     factory.getUpsCurrentUser = function (w, filter) {
         return baseSvc.getRestFilter(w + "/_api/SP.UserProfiles.PeopleManager/GetMyProperties", filter)
-
     };
     factory.getUpsCurrentUserObj = function (w, filter) {
         var deferred = $q.defer();
