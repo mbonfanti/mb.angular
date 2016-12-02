@@ -54,12 +54,14 @@
     <Content Include="README.md" />
     <Content Include="src\Components\Bookmark\Bookmarks.html" />
     <Content Include="src\Components\Like\Like.html" />
+    <Content Include="src\Components\UserBadge\userBadge.html" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="src\Components\" />
     <Folder Include="src\Components\Bookmark\" />
     <Folder Include="src\Components\Like\" />
+    <Folder Include="src\Components\UserBadge\" />
     <Folder Include="src\Services\" />
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />

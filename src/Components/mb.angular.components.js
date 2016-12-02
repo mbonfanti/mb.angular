@@ -285,7 +285,7 @@ angular.module("mb.angular.components").component('likeSnippet', {
  */
 angular.module("mb.angular.components").component('userBadge', {
 
-    templateUrl: '/_layouts/15/Space/SpaceJs/Master/badge/badge.html',
+    templateUrl: 'UserBadge/userBadge.html',
     transclude: true,
     bindings: {
         obj: '<'

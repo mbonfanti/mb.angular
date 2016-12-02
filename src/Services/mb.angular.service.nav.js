@@ -3,7 +3,10 @@
 
     factory.headers = { "accept": "application/json;odata=verbose" };
     factory.navTermests = {}
+    factory.getTopNav = function (w) {
+        return baseSvc.getRestFilter(w + "/_api/web/navigation/TopNavigationbar", "$expand=Children")
 
+    }
     // ****************************************************************************
     // getNavTermSetTree
     //

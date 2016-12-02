@@ -1,0 +1,11 @@
+﻿<span class="mcl-action">
+    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">
+        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>
+        Unlike
+    </span>
+    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">
+        <i class="mcl-glyphicons-icon mcl-icon-like"></i>
+        Like
+    </span>
+    ({{ $ctrl.obj.LikesCount }})
+</span>  
