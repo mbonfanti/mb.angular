@@ -31,7 +31,7 @@ gulp.task('mb-modules', function () {
         "src/mb.lib.js",
         "src/mb.angular.js",
         "src/mb.angular.filters.js",
-        "src/services",
+        "src/services/*.js",
          "src/components/**/*.js"
     ])
         .pipe(concat('mb.all.js'))
