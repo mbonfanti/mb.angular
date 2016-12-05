@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "mb.angular", "mb.angular.njsproj", "{32D34E3D-03D3-49E9-B9EB-A4D93EC1DE49}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "mb.lib", "..\mb.lib\mb.lib.njsproj", "{CEC66273-65CC-4B88-8F5E-1DD10904F5F9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{32D34E3D-03D3-49E9-B9EB-A4D93EC1DE49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32D34E3D-03D3-49E9-B9EB-A4D93EC1DE49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32D34E3D-03D3-49E9-B9EB-A4D93EC1DE49}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CEC66273-65CC-4B88-8F5E-1DD10904F5F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CEC66273-65CC-4B88-8F5E-1DD10904F5F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CEC66273-65CC-4B88-8F5E-1DD10904F5F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CEC66273-65CC-4B88-8F5E-1DD10904F5F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
