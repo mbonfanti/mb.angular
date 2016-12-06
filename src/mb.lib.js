@@ -7,6 +7,12 @@ var console = console || { "log": function () { } };
 /* Inizializzazione della libreria MB */
 
 var mb = mb || {};
+mb.url = "";
+mb.loadCSS = function (href) {
+    console.log('Registrazione')
+    var cssLink = $("<link rel='stylesheet' type='text/css' href='" + Space.url + "/" + href + "'>");
+    $("head").append(cssLink);
+};
 // Globals da usare nella pagina
 mb.web = {}; // Contiene L'oggetto sharepoint del web
 mb.user = {} // Contiene l'oggetto utente
