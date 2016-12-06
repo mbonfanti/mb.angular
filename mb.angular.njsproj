@@ -54,6 +54,7 @@
     <Compile Include="src\Services\mb.angular.service.base.js" />
     <Content Include=".gitattributes" />
     <Content Include=".gitignore" />
+    <Content Include="bower.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="src\Components\Bookmark\Bookmarks.html" />
