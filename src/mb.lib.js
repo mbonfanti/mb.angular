@@ -9,7 +9,7 @@ var console = console || { "log": function () { } };
 var mb = mb || {};
 mb.url = "";
 mb.loadCSS = function (href) {
-    console.log('Registrazione')
+ 
     var cssLink = $("<link rel='stylesheet' type='text/css' href='" + mb.url + "/" + href + "'>");
     $("head").append(cssLink);
 };
