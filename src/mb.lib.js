@@ -1,4 +1,10 @@
-﻿var console = console || { "log": function () { } };
+﻿/*
+    Override per Internet Explorer, senza questo il console log, senza gli strumenti di DEV aperti,
+    non funziona bloccando il codice
+*/
+var console = console || { "log": function () { } };
+
+/* Inizializzazione della libreria MB */
 
 var mb = mb || {};
 // Globals da usare nella pagina
