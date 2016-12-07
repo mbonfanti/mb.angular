@@ -1,12 +1,12 @@
 {
   "name": "mb.angular",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "mb.angular",
   "author": {
     "name": "Administrator"
   },
   "dependencies": {
-   
+
   },
   "devDependencies": {
     "add-stream": "^1.0.0",
@@ -23,5 +23,9 @@
     "merge-stream": "^1.0.1",
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mbonfanti/mb.angular.git"
   }
 }
