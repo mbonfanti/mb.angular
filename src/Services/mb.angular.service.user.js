@@ -17,27 +17,27 @@
 
         var deferred = $q.defer();
         factory.getUserProfile(w, user.Name)
-           .then(
-               function (data) {
-                   var tempUser = {}
-                   angular.merge(tempUser, user, data.data.d)
-                   angular.merge(tempUser, tempUser, commonSvc.resultsToObject(data.data.d.UserProfileProperties.results, 'Key', 'Value'))
+            .then(
+            function (data) {
+                var tempUser = {}
+                angular.merge(tempUser, user, data.data.d)
+                angular.merge(tempUser, tempUser, commonSvc.resultsToObject(data.data.d.UserProfileProperties.results, 'Key', 'Value'))
 
 
-                   if (!tempUser.PictureUrl) {
-                       tempUser.PictureUrl = w + '/_layouts/15/Images/Space/avatar.png'
-                       //ctrl.simple = true;
-                   }
-                   if (tempUser["SPS-SipAddress"]) {
-                       tempUser.sip = tempUser["SPS-SipAddress"];
-                   } else {
-                       tempUser.sip = tempUser.Email;
-                   }
+                if (!tempUser.PictureUrl) {
+                    tempUser.PictureUrl = w + '/_layouts/15/Images/Space/avatar.png'
+                    //ctrl.simple = true;
+                }
+                if (tempUser["SPS-SipAddress"]) {
+                    tempUser.sip = tempUser["SPS-SipAddress"];
+                } else {
+                    tempUser.sip = tempUser.Email;
+                }
 
-                   tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+                tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
 
-                   return deferred.resolve(tempUser)
-               })
+                return deferred.resolve(tempUser)
+            })
 
         return deferred.promise;
     }
@@ -45,19 +45,19 @@
 
     factory.getUserByID = function (w, i) {
         var deferred = $q.defer();
-        var request = $http({
+        $http({
             url: w + "/_api/web/getuserbyid(" + i + ")",
             method: "GET",
-            headers: factory.headers,
-            success: function (data) {
-                var t = data.d;
-                t.UserName = commonSvc.DecodeClaim(t.LoginName);
-                deferred.resolve(t);
-            },
-            error: function (err) {
-                deferred.reject(err);
-            }
-        });
+            headers: factory.headers})
+            .then(
+                function (data) {
+                    var t = data.data.d;
+                    t.UserName = commonSvc.DecodeClaim(t.LoginName);
+                    deferred.resolve(t);
+                },
+                function (error) {
+                    deferred.reject(error);
+                });
 
 
         return deferred.promise;
@@ -69,14 +69,14 @@
         factory.getDigest(url).then(function (data) {
             var digest = data.d.GetContextWebInformation.FormDigestValue;
             baseSvc.getUserGroups(url, userId, digest)
-            .done(function (r) {
-                for (i === 0; i < arrGroups; i++) {
-                    t = commonSvc.arrayContiene(r.d.results, arrGroups[i])
-                }
-                deferred.resolve(t);
-            }).fail(function (data, status) {
-                deferred.reject(data);
-            })
+                .done(function (r) {
+                    for (i === 0; i < arrGroups; i++) {
+                        t = commonSvc.arrayContiene(r.d.results, arrGroups[i])
+                    }
+                    deferred.resolve(t);
+                }).fail(function (data, status) {
+                    deferred.reject(data);
+                })
         });
 
         return deferred.promise();
@@ -86,19 +86,19 @@
         var t = false;
         var arrGroups = groups.split(';');
         baseSvc.getListFilter(url, "Gruppi", "")
-        .success(function (data) {
+            .success(function (data) {
 
-            for (var i = 0; i < arrGroups.length; i++) {
-                t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
-            }
-            deferred.resolve(t);
+                for (var i = 0; i < arrGroups.length; i++) {
+                    t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
+                }
+                deferred.resolve(t);
 
-        }).error(function (data) {
+            }).error(function (data) {
 
 
-            deferred.reject(data);
+                deferred.reject(data);
 
-        })
+            })
 
         return deferred.promise();
     }
@@ -188,7 +188,7 @@
 
         return deferred.promise;
     };
-   
+
     return factory;
 }])
 angular.module("mb.angular").factory("adUserSvc", ['commonSvc', 'baseSvc', '$q', '$http', function (commonSvc, baseSvc, $q, $http) {
