@@ -2108,11 +2108,9 @@ angular.module("mb.angular").factory("searchSvc", ['baseSvc', '$q', '$http', 'co
     }
     return factory;
 }])
-
 angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'commonSvc', function (baseSvc, $q, $http, commonSvc) {
 
     var factory = {};
-
     factory.headers = { "accept": "application/json;odata=verbose" };
     factory.isAdmin = false;
     factory.getUserProfile = function (w, accountName) {
@@ -2156,7 +2154,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
 
 
     factory.getUserByID = function (w, i) {
-        var deferred = jQuery.Deferred();
+        var deferred = $q.defer();
         var request = $http({
             url: w + "/_api/web/getuserbyid(" + i + ")",
             method: "GET",
@@ -2172,7 +2170,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         });
 
 
-        return deferred.promise();
+        return deferred.promise;
     }
     factory.userInGroupsSP = function (url, userId, groups) {
         var deferred = jQuery.Deferred();
