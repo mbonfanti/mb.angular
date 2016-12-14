@@ -1,13 +1,11 @@
 {
   "name": "mb.angular",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "mb.angular",
   "author": {
     "name": "Administrator"
   },
-  "dependencies": {
-
-  },
+  "dependencies": {},
   "devDependencies": {
     "add-stream": "^1.0.0",
     "del": "^2.2.2",
