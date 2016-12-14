@@ -31,6 +31,7 @@
        .then(function (data) {
                 var tempUser = data.data.d
                 tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+                angular.merge(tempUser, commonSvc.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'))
                 deferred.resolve(tempUser)
             },
             function (error) {
@@ -49,13 +50,22 @@
         var deferred = $q.defer();
         factory.getUserByID(w, id).then(
             function (data) {
+                utenteCompleto = data.data.d;
+                utenteCompleto.isUps = false;
+                utenteCompleto.isUpsAlert = false;
                 console.log(data)
-                factory.getUserProfile(w, user.Name)
+                factory.getUserProfile(w, data.data.d.LoginName)
                     .then(function (data) {
                         utenteCompleto.isUps = true
-                        angular.merge(utenteCompleto, data.data.d)
+                        angular.merge(utenteCompleto, data)
+                        return deferred.resolve(utenteCompleto)
+                    },function (err) {
+                        utenteCompleto.isUpsAlert = true;
                         return deferred.resolve(utenteCompleto)
                     })
+            }, function (err) {
+
+                return deferred.reject(err)
             })
 
         return deferred.promise;
