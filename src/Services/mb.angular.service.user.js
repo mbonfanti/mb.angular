@@ -1,69 +1,78 @@
-﻿
-angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'commonSvc', function (baseSvc, $q, $http, commonSvc) {
+﻿angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'commonSvc', function (baseSvc, $q, $http, commonSvc) {
 
     var factory = {};
-
     factory.headers = { "accept": "application/json;odata=verbose" };
     factory.isAdmin = false;
-    factory.getUserProfile = function (w, accountName) {
-        var temp = accountName.split('|')[1]
+
+    factory.getCurrentUser = function (w) {
         return $http({
-            url: w + "/_api/SP.UserProfiles.PeopleManager/GetPropertiesFor(accountName=@v)?@v='" + temp + "'",
+            url: w + "/_api/web/getuserbyid(" + _spPageContextInfo.userId + ")",
             method: "GET",
             headers: factory.headers
         });
 
     }
+    factory.getUserByID = function (w, i) {
+        return $http({
+            url: w + "/_api/web/getuserbyid(" + i + ")",
+            method: "GET",
+            headers: factory.headers
+        });
+    }
 
-    factory.getCompleteUserProfile = function (w, user) {
-
+    // Torna il profilo utente preso dall'UPS - torna errore se l'ups non è attivo
+    factory.getUserProfile = function (w, accountName) {
         var deferred = $q.defer();
-        factory.getUserProfile(w, user.Name)
-           .then(
-               function (data) {
-                   var tempUser = {}
-                   angular.merge(tempUser, user, data.data.d)
-                   angular.merge(tempUser, tempUser, commonSvc.resultsToObject(data.data.d.UserProfileProperties.results, 'Key', 'Value'))
+        $http({
+            url: w + "/_api/SP.UserProfiles.PeopleManager/GetPropertiesFor(accountName=@v)?@v='" + encodeURIComponent(accountName) + "'",
+            method: "GET",
+            headers: factory.headers
+        })
+       .then(function (data) {
+                var tempUser = data.data.d
+                tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+                angular.merge(tempUser, commonSvc.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'))
+                deferred.resolve(tempUser)
+            },
+            function (error) {
+                deferred.reject(error)
+            })
 
+        return deferred.promise;
+    }
 
-                   if (!tempUser.PictureUrl) {
-                       tempUser.PictureUrl = w + '/_layouts/15/Images/Space/avatar.png'
-                       //ctrl.simple = true;
-                   }
-                   if (tempUser["SPS-SipAddress"]) {
-                       tempUser.sip = tempUser["SPS-SipAddress"];
-                   } else {
-                       tempUser.sip = tempUser.Email;
-                   }
+    // Torna l'utente completo, passando il solo ID utente, controlla se ups è attivo e funzionante, nel caso 
+    // la proprietaa isUps ci dice se il profilo è completo dall'ups
 
-                   tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    factory.getCompleteUserProfile = function (w, id) {
+        var utenteCompleto = {}
+        utenteCompleto.isUps = false;
+        var deferred = $q.defer();
+        factory.getUserByID(w, id).then(
+            function (data) {
+                utenteCompleto = data.data.d;
+                utenteCompleto.isUps = false;
+                utenteCompleto.isUpsAlert = false;
+                console.log(data)
+                factory.getUserProfile(w, data.data.d.LoginName)
+                    .then(function (data) {
+                        utenteCompleto.isUps = true
+                        angular.merge(utenteCompleto, data)
+                        return deferred.resolve(utenteCompleto)
+                    },function (err) {
+                        utenteCompleto.isUpsAlert = true;
+                        return deferred.resolve(utenteCompleto)
+                    })
+            }, function (err) {
 
-                   return deferred.resolve(tempUser)
-               })
+                return deferred.reject(err)
+            })
 
         return deferred.promise;
     }
 
 
-    factory.getUserByID = function (w, i) {
-        var deferred = jQuery.Deferred();
-        var request = $http({
-            url: w + "/_api/web/getuserbyid(" + i + ")",
-            method: "GET",
-            headers: factory.headers,
-            success: function (data) {
-                var t = data.d;
-                t.UserName = commonSvc.DecodeClaim(t.LoginName);
-                deferred.resolve(t);
-            },
-            error: function (err) {
-                deferred.reject(err);
-            }
-        });
-
-
-        return deferred.promise();
-    }
+   
     factory.userInGroupsSP = function (url, userId, groups) {
         var deferred = jQuery.Deferred();
         var t = false;
@@ -71,14 +80,14 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         factory.getDigest(url).then(function (data) {
             var digest = data.d.GetContextWebInformation.FormDigestValue;
             baseSvc.getUserGroups(url, userId, digest)
-            .done(function (r) {
-                for (i === 0; i < arrGroups; i++) {
-                    t = commonSvc.arrayContiene(r.d.results, arrGroups[i])
-                }
-                deferred.resolve(t);
-            }).fail(function (data, status) {
-                deferred.reject(data);
-            })
+                .done(function (r) {
+                    for (i === 0; i < arrGroups; i++) {
+                        t = commonSvc.arrayContiene(r.d.results, arrGroups[i])
+                    }
+                    deferred.resolve(t);
+                }).fail(function (data, status) {
+                    deferred.reject(data);
+                })
         });
 
         return deferred.promise();
@@ -88,19 +97,19 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         var t = false;
         var arrGroups = groups.split(';');
         baseSvc.getListFilter(url, "Gruppi", "")
-        .success(function (data) {
+            .success(function (data) {
 
-            for (var i = 0; i < arrGroups.length; i++) {
-                t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
-            }
-            deferred.resolve(t);
+                for (var i = 0; i < arrGroups.length; i++) {
+                    t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
+                }
+                deferred.resolve(t);
 
-        }).error(function (data) {
+            }).error(function (data) {
 
 
-            deferred.reject(data);
+                deferred.reject(data);
 
-        })
+            })
 
         return deferred.promise();
     }
@@ -127,14 +136,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         });
         return request;
     }
-    factory.getCurrentUser = function (w, i) {
-        return $http({
-            url: w + "/_api/web/getuserbyid(" + i + ")",
-            method: "GET",
-            headers: factory.headers
-        });
 
-    }
 
     factory.getUserGroups = function (w, i, d) {
         return $http({
@@ -168,6 +170,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
             }
         });
     }
+
     factory.getUpsCurrentUser = function (w, filter) {
         return baseSvc.getRestFilter(w + "/_api/SP.UserProfiles.PeopleManager/GetMyProperties", filter)
     };
@@ -190,7 +193,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
 
         return deferred.promise;
     };
-   
+
     return factory;
 }])
 angular.module("mb.angular").factory("adUserSvc", ['commonSvc', 'baseSvc', '$q', '$http', function (commonSvc, baseSvc, $q, $http) {
