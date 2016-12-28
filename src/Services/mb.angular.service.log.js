@@ -24,7 +24,7 @@ angular.module("mb.angular").factory("logSvc", ['baseSvc', 'itemsSvc', '$http', 
             m.LogMessage = JSON.stringify(message).toString();
             m.LogLevel = 'medium';
             m.App = 'Space';
-            m.Url = w;
+            m.LinkUrl = w;
 
             if (con) {
                 console.log(message)
