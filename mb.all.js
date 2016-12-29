@@ -1662,6 +1662,32 @@ angular.module("mb.angular").factory("mmdSvc", ['commonSvc', 'baseSvc', '$q', '$
 
     return factory;
 }])
+// Componenti Manged Metadata
+angular.module("mb.angular").component('getTerm', {
+
+    template: '<span>{{ $ctrl.term.Name }}</span>',
+    transclude: true,
+    bindings: {
+        termid: '@'
+    },
+    controller: function (mmdSvc, spaceService, filtraTermsFilter) {
+        var ctrl = this;
+        ctrl.term = {}
+        ctrl.$onInit = function () {
+
+            mmdSvc.getTermByGuid(ctrl.termid)
+                .then(
+                function (data) {
+                    ctrl.term = data
+                },
+                function (error) {
+                    console.log(error)
+                }
+                )
+            //ctrl.term = filtraTermsFilter(spaceService.deptsTS, ctrl.termid)
+        }
+    }
+});
 angular.module("mb.angular").factory("navSvc", ['baseSvc', '$q', '$http', function (baseSvc, $q, $http) {
     var factory = {};
 
