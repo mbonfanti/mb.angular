@@ -1159,33 +1159,38 @@ angular.module("mb.angular").factory("itemsSvc", ['baseSvc', '$http', function (
 
     var factory = {};
     factory.headers = { "accept": "application/json;odata=verbose" };
-    
-
+    $http.defaults.headers.post["Content-Type"] = "application/json";
 
     // MODIFICATI DA MATTEO IL 18-12 ORA CARICA TUTTO IN AUTOMATICO SIA DIGEST CHE IL __METADATA
     factory.addListItem = function (w, l, metadata) {
-        $http.defaults.headers.post["Content-Type"] = "application/json";
-        var item = jQuery.extend({
-            "__metadata": {
-                "type": baseSvc.GetItemTypeForListName(l)
-            }
-        }, metadata);
-        var url = w + "/_api/web/lists/getbytitle('" + l + "')/items";
-        return baseSvc.getDigest(w).then(function (data) {
 
-            return jQuery.ajax({
-                url: url,
-                method: "POST",
-                contentType: "application/json;odata=verbose",
-                data: JSON.stringify(item),
-                headers: {
-                    "Accept": "application/json;odata=verbose",
-                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue
+        // Becchiamo il tipo
+        return baseSvc.getRest(w + '/_api/web/lists/GetByTitle(\'' + l + '\')/ListItemEntityTypeFullName').then(function (data) {
+
+            var item = jQuery.extend({
+                "__metadata": {
+                    "type": data.data.d.ListItemEntityTypeFullName
                 }
+            }, metadata);
 
+            var url = w + "/_api/web/lists/getbytitle('" + l + "')/items";
+            return baseSvc.getDigest(w).then(function (data) {
+
+                return jQuery.ajax({
+                    url: url,
+                    method: "POST",
+                    contentType: "application/json;odata=verbose",
+                    data: JSON.stringify(item),
+                    headers: {
+                        "Accept": "application/json;odata=verbose",
+                        "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue
+                    }
+
+                });
             });
         });
     }
+    
     factory.updateListItem = function (w, l, id, metadata) {
         var deferred = jQuery.Deferred();
         var url = w + "/_api/web/lists/getbytitle('" + l + "')/items(" + id + ")";
