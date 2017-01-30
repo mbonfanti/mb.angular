@@ -1,226 +1,354 @@
-﻿angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'commonSvc', function (baseSvc, $q, $http, commonSvc) {
+﻿angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $http) {
 
     var factory = {};
+
     factory.headers = { "accept": "application/json;odata=verbose" };
-    factory.isAdmin = false;
 
-    factory.getCurrentUser = function (w) {
+    factory.executeJson = function (url, method, additionalHeaders, payload) {
+        var headers = {};
+        headers["Accept"] = "application/json;odata=verbose";
+        if (method === "POST") {
+            headers["X-RequestDigest"] = jQuery("#__REQUESTDIGEST").val();
+        }
+        if (typeof additionalHeaders !== 'undefined') {
+            for (var key in additionalHeaders) {
+                headers[key] = additionalHeaders[key];
+            }
+        }
+
+        var ajaxOptions =
+            {
+                url: url,
+                type: method,
+                contentType: factory.headers,
+                headers: headers
+            };
+        if (method === "POST") {
+            ajaxOptions.data = JSON.stringify(payload);
+        }
+
+        return $http(ajaxOptions);
+    }
+
+
+    factory.getDigest = function (w) {
         return $http({
-            url: w + "/_api/web/getuserbyid(" + _spPageContextInfo.userId + ")",
-            method: "GET",
+            url: w + "/_api/contextinfo",
+            method: "POST",
             headers: factory.headers
         });
 
+    };
+    factory.GetItemTypeForListName = function (name) {
+        return "SP.Data." + name.charAt(0).toUpperCase() + name.split(" ").join("").slice(1) + "ListItem";
     }
-    factory.getUserByID = function (w, i) {
+
+    // Get WebSite Data
+    factory.webData = function (w, f) {
+        return factory.getRest(w + "/_api/web?" + f)
+    }
+
+
+    factory.getCurrentPage = function () {
+        var url = _spPageContextInfo.webServerRelativeUrl;
+        var id = _spPageContextInfo.pageItemId;
+        return factory.getListIdFilter(url, 'Pages', id, '$select=*,LikedBy/Title,LikedBy/Id,ParentList/Id,PublishingContact/Id,PublishingContact/Name,PublishingContact/Title&$expand=LikedBy,ContentType,ParentList,PublishingContact')
+    }
+
+    // Plain Rest Call in Sharepoint
+    factory.getRest = function (restUrl) {
         return $http({
-            url: w + "/_api/web/getuserbyid(" + i + ")",
-            method: "GET",
-            headers: factory.headers
-        });
-    }
-
-    // Torna il profilo utente preso dall'UPS - torna errore se l'ups non è attivo
-    factory.getUserProfile = function (w, accountName) {
-        var deferred = $q.defer();
-        $http({
-            url: w + "/_api/SP.UserProfiles.PeopleManager/GetPropertiesFor(accountName=@v)?@v='" + encodeURIComponent(accountName) + "'",
-            method: "GET",
-            headers: factory.headers
-        })
-       .then(function (data) {
-                var tempUser = data.data.d
-                tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-                angular.merge(tempUser, commonSvc.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'))
-                deferred.resolve(tempUser)
-            },
-            function (error) {
-                deferred.reject(error)
-            })
-
-        return deferred.promise;
-    }
-
-    // Torna l'utente completo, passando il solo ID utente, controlla se ups è attivo e funzionante, nel caso 
-    // la proprietaa isUps ci dice se il profilo è completo dall'ups
-
-    factory.getCompleteUserProfile = function (w, id) {
-        var utenteCompleto = {}
-        utenteCompleto.isUps = false;
-        var deferred = $q.defer();
-        factory.getUserByID(w, id).then(
-            function (data) {
-                utenteCompleto = data.data.d;
-                utenteCompleto.isUps = false;
-                utenteCompleto.isUpsAlert = false;
-                console.log(data)
-                factory.getUserProfile(w, data.data.d.LoginName)
-                    .then(function (data) {
-                        utenteCompleto.isUps = true
-                        angular.merge(utenteCompleto, data)
-                        return deferred.resolve(utenteCompleto)
-                    },function (err) {
-                        utenteCompleto.isUpsAlert = true;
-                        return deferred.resolve(utenteCompleto)
-                    })
-            }, function (err) {
-
-                return deferred.reject(err)
-            })
-
-        return deferred.promise;
-    }
-
-
-   
-    factory.userInGroupsSP = function (url, userId, groups) {
-        var deferred = jQuery.Deferred();
-        var t = false;
-        var arrGroups = groups.split(';');
-        factory.getDigest(url).then(function (data) {
-            var digest = data.d.GetContextWebInformation.FormDigestValue;
-            baseSvc.getUserGroups(url, userId, digest)
-                .done(function (r) {
-                    for (i === 0; i < arrGroups; i++) {
-                        t = commonSvc.arrayContiene(r.d.results, arrGroups[i])
-                    }
-                    deferred.resolve(t);
-                }).fail(function (data, status) {
-                    deferred.reject(data);
-                })
-        });
-
-        return deferred.promise();
-    }
-    factory.userInGroups = function (url, userId, groups) {
-        var deferred = jQuery.Deferred();
-        var t = false;
-        var arrGroups = groups.split(';');
-        baseSvc.getListFilter(url, "Gruppi", "")
-            .success(function (data) {
-
-                for (var i = 0; i < arrGroups.length; i++) {
-                    t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
-                }
-                deferred.resolve(t);
-
-            }).error(function (data) {
-
-
-                deferred.reject(data);
-
-            })
-
-        return deferred.promise();
-    }
-
-    factory.ensureUser = function (w, loginName) {
-        var payload = { 'logonName': loginName };
-        return $http({
-            url: w + "/_api/web/ensureuser",
-            type: "POST",
-            contentType: "application/json;odata=verbose",
-            data: JSON.stringify(payload),
+            url: restUrl,
+            type: "GET",
             headers: {
-                "X-RequestDigest": jQuery("#__REQUESTDIGEST").val(),
                 "accept": "application/json;odata=verbose"
             }
         });
+
+    };
+    factory.getRestFilter = function (restUrl, f) {
+        return $http({
+            url: restUrl + '?' + f,
+            type: "GET",
+            headers: {
+                "accept": "application/json;odata=verbose"
+            }
+        });
+
+    };
+
+    factory.getRestPost = function (w, l, metadata) {
+        return factory.getDigest(w).then(function (data) {
+            return $http({
+                url: w + "/_api/web/lists/getbytitle('" + l + "')/getitems",
+                method: "POST",
+                data: metadata,
+                headers: {
+                    "X-RequestDigest": data.d.GetContextWebInformation.FormDigestValue,
+                    "Accept": factory.headers,
+                    "content-type": factory.headers
+                }
+            })
+        })
     }
 
-    factory.getUsersFromGroup = function (w, g) {
-        var request = $http({
-            url: w + "/_api/web/sitegroups/getByName('" + g + "')/Users",
-            method: "GET",
+    // Work With list Items
+    factory.getListFilter = function (w, l, f) {
+        var restUrl = w + "/_api/web/lists/getByTitle('" + l + "')/items?" + f;
+        return $http({
+            type: "GET",
+            url: restUrl,
             headers: factory.headers
         });
-        return request;
     }
-
-
-    factory.getUserGroups = function (w, i, d) {
+    factory.getListId = function (w, l, id) {
+        var restUrl = w + "/_api/web/lists/getByTitle('" + l + "')/items(" + id + ")";
         return $http({
-            url: w + "/_api/web/GetUserById(" + i + ")/Groups",
             type: "GET",
-            headers: { "Accept": "application/json; odata=verbose", "X-RequestDigest": d },
-            dataType: "json"
+            url: restUrl,
+            headers: factory.headers
         });
 
     }
-    factory.addUserToGroup = function (w, g, u, d) {
+    factory.getListIdFilter = function (w, l, id, f) {
+        var restUrl = w + "/_api/web/lists/getByTitle('" + l + "')/items(" + id + ")?" + f;
         return $http({
-            url: w + "/_api/web/sitegroups(" + g + ")/users",
-            method: "POST",
-            data: JSON.stringify({ '__metadata': { 'type': 'SP.User' }, 'LoginName': u }),
-            headers: {
-                "Accept": "application/json; odata=verbose",
-                "Content-Type": "application/json; odata=verbose",
-                "X-RequestDigest": d
-            }
+            type: "GET",
+            url: restUrl,
+            headers: factory.headers
         });
-    }
-    factory.removeUserFromGroup = function (w, g, u, d) {
-        return $http({
-            url: w + "/_api/web/sitegroups(" + g + ")/users/removebyid(" + u + ")",
-            method: "POST",
-            headers: {
-                "Accept": "application/json; odata=verbose",
-                "Content-Type": "application/json; odata=verbose",
-                "X-RequestDigest": d
-            }
-        });
+
     }
 
-    factory.getUpsCurrentUser = function (w, filter) {
-        return baseSvc.getRestFilter(w + "/_api/SP.UserProfiles.PeopleManager/GetMyProperties", filter)
-    };
-    factory.getUpsCurrentUserObj = function (w, filter) {
+    factory.getListCaml = function (w, l, caml) {
+        return factory.getDigest(w).then(function (data) {
+            return jQuery.ajax({
+                url: w + "/_api/web/lists/getbytitle('" + l + "')/getitems",
+                method: "POST",
+                data: "{ 'query' : {'__metadata': { 'type': 'SP.CamlQuery' }, \"ViewXml\": \"" + caml + "\" }}",
+                headers: {
+                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
+                    "Accept": factory.headers,
+                    "content-type": factory.headers
+                }
+            })
+        })
+    }
+    factory.getListCamlFilter = function (w, l, f, caml) {
+        return factory.getDigest(w).then(function (data) {
+            return jQuery.ajax({
+                url: w + "/_api/web/lists/getbytitle('" + l + "')/getitems?" + f,
+                method: "POST",
+                data: "{ 'query' : {'__metadata': { 'type': 'SP.CamlQuery' }, \"ViewXml\": \"" + caml + "\" }}",
+                headers: {
+                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
+                    "Accept": "application/json;odata=verbose",
+                    "content-type": "application/json;odata=verbose"
+                }
+            })
+        })
+    }
+
+    factory.getListItemsFIlterMMD = function (w, l, filed, term) {
+        var caml = "<View Scope='RecursiveAll'>" +
+            "<Query>" +
+            "<Where>" +
+            "<Eq>" +
+            "<FieldRef Name='" + field + "'/>" +
+            "<Value Type='TaxonomyFieldType'>" + ct + "</Value>" +
+            "</Eq>" +
+            "</Where>" +
+            "</Query>" +
+            "</View>";
+        return factory.getListCamlFilter(w, l, '', caml)
+    }
+    factory.getListItemsCT = function (w, l, ct) {
+        var caml = "<View>" +
+            "<Query>" +
+            "<Where>" +
+            "<Eq>" +
+            "<FieldRef Name='ContentType'/>" +
+            "<Value Type='Computed'>" + ct + "</Value>" +
+            "</Eq>" +
+            "</Where>" +
+            "</Query>" +
+            "</View>";
+        return factory.getListCamlFilter(w, l, '', caml)
+    }
+
+    factory.getTasksMilestone = function (u) {
         var deferred = $q.defer();
-        factory.getUpsCurrentUser(w, filter)
-            .then(function (data) {
-                var temp = data.data.d;
-                $.each(temp.UserProfileProperties.results, function (index, result) {
-                    temp[result.Key] = result.Value
-                });
+        var clientContextCertType = new SP.ClientContext(u);
+        var oListCertType = clientContextCertType.get_web().get_lists().getByTitle('Tasks');
+        var queryCertType = new SP.CamlQuery();
+        queryCertType.set_viewXml(
+            '<View><Query><Where>' +
+            '<IsNull><FieldRef Name="ParentID" /></IsNull>' +
+            '</View></Query></Where>'
+        );
+        oListItemCertType = oListCertType.getItems(queryCertType);
+        clientContextCertType.load(oListItemCertType);
+        clientContextCertType.executeQueryAsync(
+            Function.createDelegate(this, function (data) {
+                deferred.resolve(data);
+            }),
+            Function.createDelegate(this, function (sender, args) {
+                deferred.reject('Request failed. ' + args.get_message() + '\n' + args.get_stackTrace());
+            })
+        );
 
-                deferred.resolve(temp);
+        return deferred.promise;
+
+    }
+    factory.getWebProperty = function (w, p) {
+        return $http({
+            url: w + "/_api/web/AllProperties?select='" + p + "'",
+            method: "GET",
+            headers: {
+                "Accept": "application/json; odata=verbose",
+            }
+        });
+    }
+
+    factory.setWebProperty = function (w, p, v) {
+        var deferred = $q.defer();
+
+        var ctx = new SP.ClientContext.get_current();
+        var web = ctx.get_site().get_rootWeb();
+        this.props = web.get_allProperties();
+        this.props.set_item(p, v);
+        ctx.load(web);
+        ctx.executeQueryAsync(
+            Function.createDelegate(this, gotProperty),
+            Function.createDelegate(this, failedGettingProperty)
+        )
+
+        function gotProperty() {
+
+            deferred.resolve(this.props.get_item(p));
+        }
+        function failedGettingProperty() {
+            deferred.reject(data);
+        }
+        return deferred.promise;
+    }
+
+
+    // Work With Folders
+    factory.existFolder = function (w, l, u, f) {
+        var deferred = jQuery.Deferred();
+        var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
+        factory.getRest(tempUrl)
+            .then(function (data) {
+                deferred.resolve(data.data.d.Files.results);
             },
             function (error) {
                 // Non esiste, creiamolo
-                console.log(error)
-                deferred.reject(error);
+                factory.createFolder(w, l, f)
+                    .then(function (data) {
+                        console.log(data)
+                        deferred.resolve([]);
+                    },
+                    function (error) {
+                        // Non esiste, creiamolo
+                        console.log(error)
+                        deferred.reject(error);
+                    });
+
             });
 
-        return deferred.promise;
-    };
+        return deferred;
 
-    return factory;
-}])
-angular.module("mb.angular").factory("adUserSvc", ['commonSvc', 'baseSvc', '$q', '$http', function (commonSvc, baseSvc, $q, $http) {
-
-    var factory = {};
-    factory.webApiOrgUrl = "http://itdgtosax000045fe.idg.audi.vwg:81/organization";
-    factory.getADGroups = function (ut) {
-        return baseSvc.getRest(factory.webApiOrgUrl + "/api/usersUtility/?id=" + ut)
     }
-    factory.isUserMember = function (ut, gr) {
-        var deferred = jQuery.Deferred();
-        factory.getADGroups(ut).then(function (data) {
-            var match = false;
-            for (var i = 0; i < data.length; i++) {
+    factory.createFolder = function (w, u, f) {
+        $http.defaults.headers.post["Content-Type"] = "application/json";
+        var item = { "__metadata": { 'type': 'SP.Folder' }, 'ServerRelativeUrl': u }
+        var url = w + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')/folders/add(url=\'" + f + "\')";
+        return factory.getDigest(w).then(function (data) {
 
-                if (data[i] === gr) {
-                    match = true;
+            return jQuery.ajax({
+                url: url,
+                method: "POST",
+                contentType: "application/json;odata=verbose",
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue
                 }
 
-            }
-            if (match) {
-                deferred.resolve(data);
-            } else {
-                deferred.reject(err);
+            });
+        });
+    }
+
+    // CROSS DOMAIN
+    factory.getRestCORS = function (restUrl) {
+        return $http({
+            url: restUrl,
+            type: "GET",
+            headers: {
+                "accept": factory.header,
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, X-Requested-With",
+
             }
         });
-        return deferred.promise();
+
+    };
+    factory.putRestCORS = function (restUrl) {
+        return $http({
+            url: restUrl,
+            type: "PUT",
+            headers: {
+                "accept": factory.header,
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, X-Requested-With"
+            }
+        });
+    };
+    factory.postRestCORS = function (restUrl, payload) {
+        return $http({
+            url: restUrl,
+            crossDomain: true,
+            type: 'POST',
+            dataType: 'json',
+            headers: {
+                "Accept": factory.header,
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, X-Requested-With"
+            },
+            data: payload
+        });
+    };
+    factory.getJsonP = function (u) {
+        return $http.jsonp(u)
+
     }
+
+    // GET LIST AS OBJECTS
+    factory.getListAsObj = function (u, l) {
+        var deferred = $q.defer();
+        jQuery.ajax({
+            url: u + "/_api/web/lists/getByTitle('" + l + "')/items",
+            type: 'GET',
+            headers: { 'accept': 'application/json;odata=verbose' },
+            success: function (data) {
+                var ris = data.d.results;
+                var conf = {}
+                for (i = 0; i < ris.length; i++) {
+                    conf[ris[i].Title] = ris[i].Valore
+                }
+                deferred.resolve(conf);
+            },
+            error: function (data) {
+                deferred.reject(data);
+            }
+        });
+
+        return deferred.promise;
+    }
+
+
     return factory;
 }])

@@ -17,19 +17,19 @@
         }
 
         var ajaxOptions =
-        {
-            url: url,
-            type: method,
-            contentType: factory.headers,
-            headers: headers
-        };
+            {
+                url: url,
+                type: method,
+                contentType: factory.headers,
+                headers: headers
+            };
         if (method === "POST") {
             ajaxOptions.data = JSON.stringify(payload);
         }
 
         return $http(ajaxOptions);
     }
-    
+
 
     factory.getDigest = function (w) {
         return $http({
@@ -47,6 +47,7 @@
     factory.webData = function (w, f) {
         return factory.getRest(w + "/_api/web?" + f)
     }
+
 
     factory.getCurrentPage = function () {
         var url = _spPageContextInfo.webServerRelativeUrl;
@@ -150,28 +151,28 @@
 
     factory.getListItemsFIlterMMD = function (w, l, filed, term) {
         var caml = "<View Scope='RecursiveAll'>" +
-             "<Query>" +
-             "<Where>" +
-             "<Eq>" +
-             "<FieldRef Name='" + field + "'/>" +
-             "<Value Type='TaxonomyFieldType'>" + ct + "</Value>" +
-             "</Eq>" +
-             "</Where>" +
-             "</Query>" +
-             "</View>";
+            "<Query>" +
+            "<Where>" +
+            "<Eq>" +
+            "<FieldRef Name='" + field + "'/>" +
+            "<Value Type='TaxonomyFieldType'>" + ct + "</Value>" +
+            "</Eq>" +
+            "</Where>" +
+            "</Query>" +
+            "</View>";
         return factory.getListCamlFilter(w, l, '', caml)
     }
     factory.getListItemsCT = function (w, l, ct) {
         var caml = "<View>" +
-             "<Query>" +
-             "<Where>" +
-             "<Eq>" +
-             "<FieldRef Name='ContentType'/>" +
-             "<Value Type='Computed'>" + ct + "</Value>" +
-             "</Eq>" +
-             "</Where>" +
-             "</Query>" +
-             "</View>";
+            "<Query>" +
+            "<Where>" +
+            "<Eq>" +
+            "<FieldRef Name='ContentType'/>" +
+            "<Value Type='Computed'>" + ct + "</Value>" +
+            "</Eq>" +
+            "</Where>" +
+            "</Query>" +
+            "</View>";
         return factory.getListCamlFilter(w, l, '', caml)
     }
 
@@ -181,10 +182,10 @@
         var oListCertType = clientContextCertType.get_web().get_lists().getByTitle('Tasks');
         var queryCertType = new SP.CamlQuery();
         queryCertType.set_viewXml(
-                        '<View><Query><Where>' +
-                        '<IsNull><FieldRef Name="ParentID" /></IsNull>' +
-                         '</View></Query></Where>'
-                        );
+            '<View><Query><Where>' +
+            '<IsNull><FieldRef Name="ParentID" /></IsNull>' +
+            '</View></Query></Where>'
+        );
         oListItemCertType = oListCertType.getItems(queryCertType);
         clientContextCertType.load(oListItemCertType);
         clientContextCertType.executeQueryAsync(
@@ -200,24 +201,15 @@
 
     }
     factory.getWebProperty = function (w, p) {
-        var ctx = new SP.ClientContext.get_current();
-        var web = ctx.get_site().get_rootWeb();
-        this.props = web.get_allProperties();
-        ctx.load(web);
-        ctx.executeQueryAsync(
-            Function.createDelegate(this, gotProperty),
-            Function.createDelegate(this, failedGettingProperty)
-        )
-
-        function gotProperty() {
-
-            deferred.resolve(this.props.get_item(p));
-        }
-        function failedGettingProperty() {
-            deferred.reject(data);
-        }
-        return deferred.promise;
+        return $http({
+            url: w + "/_api/web/AllProperties?select='" + p + "'",
+            method: "GET",
+            headers: {
+                "Accept": "application/json; odata=verbose",
+            }
+        });
     }
+
     factory.setWebProperty = function (w, p, v) {
         var deferred = $q.defer();
 
@@ -241,29 +233,29 @@
         return deferred.promise;
     }
 
-   
+
     // Work With Folders
     factory.existFolder = function (w, l, u, f) {
         var deferred = jQuery.Deferred();
         var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
         factory.getRest(tempUrl)
-        .then(function (data) {
-            deferred.resolve(data.data.d.Files.results);
-        },
-        function (error) {
-            // Non esiste, creiamolo
-            factory.createFolder(w, l, f)
             .then(function (data) {
-                console.log(data)
-                deferred.resolve([]);
+                deferred.resolve(data.data.d.Files.results);
             },
             function (error) {
                 // Non esiste, creiamolo
-                console.log(error)
-                deferred.reject(error);
-            });
+                factory.createFolder(w, l, f)
+                    .then(function (data) {
+                        console.log(data)
+                        deferred.resolve([]);
+                    },
+                    function (error) {
+                        // Non esiste, creiamolo
+                        console.log(error)
+                        deferred.reject(error);
+                    });
 
-        });
+            });
 
         return deferred;
 
