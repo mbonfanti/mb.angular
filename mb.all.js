@@ -501,19 +501,19 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
         }
 
         var ajaxOptions =
-        {
-            url: url,
-            type: method,
-            contentType: factory.headers,
-            headers: headers
-        };
+            {
+                url: url,
+                type: method,
+                contentType: factory.headers,
+                headers: headers
+            };
         if (method === "POST") {
             ajaxOptions.data = JSON.stringify(payload);
         }
 
         return $http(ajaxOptions);
     }
-    
+
 
     factory.getDigest = function (w) {
         return $http({
@@ -531,6 +531,7 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
     factory.webData = function (w, f) {
         return factory.getRest(w + "/_api/web?" + f)
     }
+
 
     factory.getCurrentPage = function () {
         var url = _spPageContextInfo.webServerRelativeUrl;
@@ -634,28 +635,28 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
 
     factory.getListItemsFIlterMMD = function (w, l, filed, term) {
         var caml = "<View Scope='RecursiveAll'>" +
-             "<Query>" +
-             "<Where>" +
-             "<Eq>" +
-             "<FieldRef Name='" + field + "'/>" +
-             "<Value Type='TaxonomyFieldType'>" + ct + "</Value>" +
-             "</Eq>" +
-             "</Where>" +
-             "</Query>" +
-             "</View>";
+            "<Query>" +
+            "<Where>" +
+            "<Eq>" +
+            "<FieldRef Name='" + field + "'/>" +
+            "<Value Type='TaxonomyFieldType'>" + ct + "</Value>" +
+            "</Eq>" +
+            "</Where>" +
+            "</Query>" +
+            "</View>";
         return factory.getListCamlFilter(w, l, '', caml)
     }
     factory.getListItemsCT = function (w, l, ct) {
         var caml = "<View>" +
-             "<Query>" +
-             "<Where>" +
-             "<Eq>" +
-             "<FieldRef Name='ContentType'/>" +
-             "<Value Type='Computed'>" + ct + "</Value>" +
-             "</Eq>" +
-             "</Where>" +
-             "</Query>" +
-             "</View>";
+            "<Query>" +
+            "<Where>" +
+            "<Eq>" +
+            "<FieldRef Name='ContentType'/>" +
+            "<Value Type='Computed'>" + ct + "</Value>" +
+            "</Eq>" +
+            "</Where>" +
+            "</Query>" +
+            "</View>";
         return factory.getListCamlFilter(w, l, '', caml)
     }
 
@@ -665,10 +666,10 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
         var oListCertType = clientContextCertType.get_web().get_lists().getByTitle('Tasks');
         var queryCertType = new SP.CamlQuery();
         queryCertType.set_viewXml(
-                        '<View><Query><Where>' +
-                        '<IsNull><FieldRef Name="ParentID" /></IsNull>' +
-                         '</View></Query></Where>'
-                        );
+            '<View><Query><Where>' +
+            '<IsNull><FieldRef Name="ParentID" /></IsNull>' +
+            '</View></Query></Where>'
+        );
         oListItemCertType = oListCertType.getItems(queryCertType);
         clientContextCertType.load(oListItemCertType);
         clientContextCertType.executeQueryAsync(
@@ -684,24 +685,15 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
 
     }
     factory.getWebProperty = function (w, p) {
-        var ctx = new SP.ClientContext.get_current();
-        var web = ctx.get_site().get_rootWeb();
-        this.props = web.get_allProperties();
-        ctx.load(web);
-        ctx.executeQueryAsync(
-            Function.createDelegate(this, gotProperty),
-            Function.createDelegate(this, failedGettingProperty)
-        )
-
-        function gotProperty() {
-
-            deferred.resolve(this.props.get_item(p));
-        }
-        function failedGettingProperty() {
-            deferred.reject(data);
-        }
-        return deferred.promise;
+        return $http({
+            url: w + "/_api/web/AllProperties?select='" + p + "'",
+            method: "GET",
+            headers: {
+                "Accept": "application/json; odata=verbose",
+            }
+        });
     }
+
     factory.setWebProperty = function (w, p, v) {
         var deferred = $q.defer();
 
@@ -725,29 +717,29 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
         return deferred.promise;
     }
 
-   
+
     // Work With Folders
     factory.existFolder = function (w, l, u, f) {
         var deferred = jQuery.Deferred();
         var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
         factory.getRest(tempUrl)
-        .then(function (data) {
-            deferred.resolve(data.data.d.Files.results);
-        },
-        function (error) {
-            // Non esiste, creiamolo
-            factory.createFolder(w, l, f)
             .then(function (data) {
-                console.log(data)
-                deferred.resolve([]);
+                deferred.resolve(data.data.d.Files.results);
             },
             function (error) {
                 // Non esiste, creiamolo
-                console.log(error)
-                deferred.reject(error);
-            });
+                factory.createFolder(w, l, f)
+                    .then(function (data) {
+                        console.log(data)
+                        deferred.resolve([]);
+                    },
+                    function (error) {
+                        // Non esiste, creiamolo
+                        console.log(error)
+                        deferred.reject(error);
+                    });
 
-        });
+            });
 
         return deferred;
 
@@ -2169,7 +2161,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
             method: "GET",
             headers: factory.headers
         })
-       .then(function (data) {
+            .then(function (data) {
                 var tempUser = data.data.d
                 tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
                 angular.merge(tempUser, commonSvc.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'))
@@ -2182,7 +2174,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         return deferred.promise;
     }
 
-    // Torna l'utente completo, passando il solo ID utente, controlla se ups è attivo e funzionante, nel caso 
+    // Torna l'utente completo, passando il solo ID utente, controlla se ups è attivo e funzionante, nel caso
     // la proprietaa isUps ci dice se il profilo è completo dall'ups
 
     factory.getCompleteUserProfile = function (w, id) {
@@ -2200,7 +2192,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
                         utenteCompleto.isUps = true
                         angular.merge(utenteCompleto, data)
                         return deferred.resolve(utenteCompleto)
-                    },function (err) {
+                    }, function (err) {
                         utenteCompleto.isUpsAlert = true;
                         return deferred.resolve(utenteCompleto)
                     })
@@ -2213,7 +2205,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
     }
 
 
-   
+
     factory.userInGroupsSP = function (url, userId, groups) {
         var deferred = jQuery.Deferred();
         var t = false;
@@ -2259,12 +2251,13 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         var payload = { 'logonName': loginName };
         return $http({
             url: w + "/_api/web/ensureuser",
-            type: "POST",
+            method: "POST",
             contentType: "application/json;odata=verbose",
             data: JSON.stringify(payload),
             headers: {
                 "X-RequestDigest": jQuery("#__REQUESTDIGEST").val(),
-                "accept": "application/json;odata=verbose"
+                "accept": "application/json;odata=verbose",
+                "Content-Type": "application/json; odata=verbose"
             }
         });
     }
@@ -2288,27 +2281,36 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         });
 
     }
-    factory.addUserToGroup = function (w, g, u, d) {
-        return $http({
-            url: w + "/_api/web/sitegroups(" + g + ")/users",
-            method: "POST",
-            data: JSON.stringify({ '__metadata': { 'type': 'SP.User' }, 'LoginName': u }),
-            headers: {
-                "Accept": "application/json; odata=verbose",
-                "Content-Type": "application/json; odata=verbose",
-                "X-RequestDigest": d
-            }
+
+    factory.addUserToGroup = function (w, g, u) {
+        return baseSvc.getDigest(w).then(function (data) {
+            var digest = data.data.d.GetContextWebInformation.FormDigestValue;
+
+            return $http({
+                url: w + "/_api/web/sitegroups/getByName('" + g + "')/users",
+                method: "POST",
+                data: JSON.stringify({ '__metadata': { 'type': 'SP.User' }, 'LoginName': u }),
+                headers: {
+                    "Accept": "application/json; odata=verbose",
+                    "Content-Type": "application/json; odata=verbose",
+                    "X-RequestDigest": digest
+                }
+            });
         });
     }
-    factory.removeUserFromGroup = function (w, g, u, d) {
-        return $http({
-            url: w + "/_api/web/sitegroups(" + g + ")/users/removebyid(" + u + ")",
-            method: "POST",
-            headers: {
-                "Accept": "application/json; odata=verbose",
-                "Content-Type": "application/json; odata=verbose",
-                "X-RequestDigest": d
-            }
+
+    factory.removeUserFromGroup = function (w, g, u) {
+        return baseSvc.getDigest(w).then(function (data) {
+            var digest = data.data.d.GetContextWebInformation.FormDigestValue;
+            return $http({
+                url: w + "/_api/web/sitegroups/getByName('" + g + "')/users/removebyid(" + u + ")",
+                method: "POST",
+                headers: {
+                    "Accept": "application/json; odata=verbose",
+                    "Content-Type": "application/json; odata=verbose",
+                    "X-RequestDigest": digest
+                }
+            });
         });
     }
 
