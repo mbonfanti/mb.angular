@@ -409,7 +409,7 @@ mb.sp.bootstrap = function () {
 };
 
 
-mb.sp.bootstrapApp = function (appName) {
+mb.sp.bootstrapApp = function (appName,call) {
 
     SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function () {
 
@@ -425,7 +425,7 @@ mb.sp.bootstrapApp = function (appName) {
             mb.user = d1;
             mb.web = d2[0].d;
             angular.bootstrap(document, [appName]);
-
+            call();
         }, function (error) {
             console.log('Error Bootstrapping ')
             alert('Errore Grave')
