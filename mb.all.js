@@ -13,6 +13,13 @@ mb.loadCSS = function (href) {
     var cssLink = $("<link rel='stylesheet' type='text/css' href='" + mb.url + "/" + href + "'>");
     $("head").append(cssLink);
 };
+mb.resultsToObject = function (ris, key, value) {
+    var temp = {}
+    for (i = 0; i < ris.length; i++) {
+        temp[ris[i][key]] = ris[i][value]
+    }
+    return temp;
+}
 // Globals da usare nella pagina
 mb.web = {}; // Contiene L'oggetto sharepoint del web
 mb.user = {} // Contiene l'oggetto utente
@@ -119,11 +126,45 @@ mb.sp.loadTaxonomy = function () {
 
 ///////// mb.SP.USER
 mb.sp.user = mb.sp.user || {};
+mb.sp.user.getAllProfile = function (url, filter) {
+
+    var dfd = $.Deferred();
+    mb.sp.user.getCurrentUser(url, filter)
+        .then(function (data) {
+            mb.user = data.d;
+            mb.sp.user.getUserProfile(url, data.d.LoginName)
+                .then(function (data) {
+                    var tempUser = data.d;
+                    tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+                    jQuery.extend(tempUser, mb.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'))
+                    jQuery.extend(tempUser, mb.user)
+                    dfd.resolve(tempUser)
+                },
+                function (error) {
+
+                    dfd.resolve(mb.user)
+                })
+        }, function (error) {
+            dfd.reject(error)
+        })
+
+    return dfd.promise();
+}
 mb.sp.user.getCurrentUser = function (w, filter) {
-    if(filter === undefined) { filter === ''}
+    if (filter === undefined) { filter === '' }
     var url = w + "/_api/web/currentuser?" + filter;
     return $.ajax(url, { method: "GET", headers: { "accept": "application/json;odata=verbose" } });
 };
+mb.sp.user.getUserProfile = function (w, accountName) {
+
+    return $.ajax({
+        url: w + "/_api/SP.UserProfiles.PeopleManager/GetPropertiesFor(accountName=@v)?@v='" + encodeURIComponent(accountName) + "'",
+        method: "GET",
+        headers: { "accept": "application/json;odata=verbose" }
+    })
+}
+
+
 mb.sp.user.hasPermission = function (web, Perm) {
     //Permission for admin to show or hide the entries on memory board using ShowOnHomePage Field
     var deferred = $.Deferred();
@@ -305,12 +346,12 @@ mb.sp.bootstrap = function () {
     mb.sp.showEditPage();
     mb.sp.log.urlListaLog = location.origin + '/manager';
 
-    var d1 = mb.sp.user.getCurrentUser(mb.sp.url,'$expand=Groups'); 
+    var d1 = mb.sp.user.getAllProfile(mb.sp.url, '$expand=Groups');
     var d2 = mb.sp.webData(mb.sp.url, '$select=*,AllProperties/__GlobalNavigationExcludes,AllProperties/__CurrentNavigationExcludes,AllProperties/__InheritCurrentNavigation&$expand=Navigation/TopNavigationBar,WebInfos,AllProperties,Webs,Navigation/QuickLaunch,ParentWeb');
     var d3 = mb.sp.loadTaxonomy();
     $.when(d1, d2, d3).then(function (d1, d2, d3) {
 
-        mb.sp.user = d1[0].d;
+        mb.sp.user = d1;
         mb.sp.web = d2[0].d;
         dfd.resolve(true);
 
@@ -330,13 +371,13 @@ mb.sp.bootstrapApp = function (appName) {
         SP.SOD.registerSod('sp.taxonomy.js', SP.Utilities.Utility.getLayoutsPageUrl('sp.taxonomy.js'));
         SP.SOD.registerSod('sp.publishing.js', SP.Utilities.Utility.getLayoutsPageUrl('sp.publishing.js'));
         mb.sp.url = _spPageContextInfo.webAbsoluteUrl;
-        var d1 = mb.sp.user.getCurrentUser(mb.sp.url, '$expand=Groups');
+        var d1 = mb.sp.user.getAllProfile(mb.sp.url, '$expand=Groups');
         var d2 = mb.sp.webData(mb.sp.url, '$select=*&$expand=AllProperties');
         var d3 = mb.sp.loadTaxonomy();
 
         $.when(d1, d2, d3).then(function (d1, d2, d3) {
             console.log('Bootstrap ' + appName)
-            mb.user = d1[0].d;
+            mb.user = d1;
             mb.web = d2[0].d;
             angular.bootstrap(document, [appName]);
 
