@@ -159,6 +159,7 @@ mb.sp.findTermSet = function (termset) {
 
 
 }
+
 mb.sp.setPeoplePicker(controlName, value) {
 
     var ppDiv = $("[id$='ClientPeoplePicker'][title='" + controlName + "']");         // Select the People Picker DIV
@@ -167,6 +168,7 @@ mb.sp.setPeoplePicker(controlName, value) {
     ppEditor.val(value);
     spPP.AddUnresolvedUserFromEditor(true);
 }
+
 ///////// mb.SP.USER
 mb.sp.user = mb.sp.user || {};
 mb.sp.user.getAllProfile = function (url, filter) {
