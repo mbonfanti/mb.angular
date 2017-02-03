@@ -123,7 +123,50 @@ mb.sp.loadTaxonomy = function () {
 
     return dfd.promise();
 }
+mb.sp.findTermSet = function (termset) {
 
+    var TermValues = []
+    var deferred = $.Deferred();
+
+    var ctx = SP.ClientContext.get_current(),
+        taxonomySession = SP.Taxonomy.TaxonomySession.getTaxonomySession(ctx),
+        termSets = taxonomySession.getTermSetsByName(termset, 1033),
+        termSet = termSets.getByName(termset),
+        terms = termSet.getAllTerms();
+
+    ctx.load(terms);
+    ctx.executeQueryAsync(Function.createDelegate(this, function (sender, args) {
+        var termsEnumerator = terms.getEnumerator();
+        var temp = '-'
+        while (termsEnumerator.moveNext()) {
+            var term = termsEnumerator.get_current();
+            var TermValue = {
+
+                Name: term.get_name(),
+                Desc: term.get_description(),
+                ID: term.get_id().ToSerialized()
+            };
+            TermValues.push(TermValue);
+        }
+        deferred.resolve(TermValues);
+    }),
+
+        Function.createDelegate(this, function (sender, args) {
+            deferred.reject(t);
+        }));
+
+    return deferred.promise();;
+
+
+}
+mb.sp.setPeoplePicker(controlName, value) {
+
+    var ppDiv = $("[id$='ClientPeoplePicker'][title='" + controlName + "']");         // Select the People Picker DIV
+    var ppEditor = ppDiv.find("[title='" + controlName + "']");  // Use the PP DIV to narrow jQuery scope
+    var spPP = SPClientPeoplePicker.SPClientPeoplePickerDict[ppDiv[0].id];           // Get the instance of the People Picker from the Dictionary
+    ppEditor.val(value);
+    spPP.AddUnresolvedUserFromEditor(true);
+}
 ///////// mb.SP.USER
 mb.sp.user = mb.sp.user || {};
 mb.sp.user.getAllProfile = function (url, filter) {
