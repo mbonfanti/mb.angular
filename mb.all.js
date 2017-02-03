@@ -160,7 +160,7 @@ mb.sp.findTermSet = function (termset) {
 
 }
 
-mb.sp.setPeoplePicker(controlName, value) {
+mb.sp.setPeoplePicker = function (controlName, value) {
 
     var ppDiv = $("[id$='ClientPeoplePicker'][title='" + controlName + "']");         // Select the People Picker DIV
     var ppEditor = ppDiv.find("[title='" + controlName + "']");  // Use the PP DIV to narrow jQuery scope
