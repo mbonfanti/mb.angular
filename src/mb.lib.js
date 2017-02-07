@@ -181,7 +181,9 @@ mb.sp.user.getAllProfile = function (url, filter) {
                 .then(function (data) {
                     var tempUser = data.d;
                     tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-                    jQuery.extend(tempUser, mb.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'))
+                    if (tempUser.UserProfileProperties != undefined) {
+                        jQuery.extend(tempUser, mb.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'));
+                    }
                     jQuery.extend(tempUser, mb.user)
                     dfd.resolve(tempUser)
                 },
@@ -425,7 +427,7 @@ mb.sp.bootstrapApp = function (appName,call) {
             mb.user = d1;
             mb.web = d2[0].d;
             angular.bootstrap(document, [appName]);
-            call();
+            //call();
         }, function (error) {
             console.log('Error Bootstrapping ')
             alert('Errore Grave')

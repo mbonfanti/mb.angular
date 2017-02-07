@@ -181,7 +181,9 @@ mb.sp.user.getAllProfile = function (url, filter) {
                 .then(function (data) {
                     var tempUser = data.d;
                     tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-                    jQuery.extend(tempUser, mb.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'))
+                    if (tempUser.UserProfileProperties != undefined) {
+                        jQuery.extend(tempUser, mb.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'));
+                    }
                     jQuery.extend(tempUser, mb.user)
                     dfd.resolve(tempUser)
                 },
@@ -425,7 +427,7 @@ mb.sp.bootstrapApp = function (appName,call) {
             mb.user = d1;
             mb.web = d2[0].d;
             angular.bootstrap(document, [appName]);
-            call();
+            //call();
         }, function (error) {
             console.log('Error Bootstrapping ')
             alert('Errore Grave')
@@ -1078,14 +1080,14 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc','$q','$http', functio
         var additionalHeaders = {};
         additionalHeaders["X-HTTP-Method"] = "MERGE";
         additionalHeaders["If-Match"] = "*";
-        return dataService.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
+        return baseSvc.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
     }
     factory.updateFolder = function (webUrl, listTitle, itemId, itemPayload) {
         var itemUrl = webUrl + "/_api/Web/Lists/GetByTitle('" + listTitle + "')/Items(" + itemId + ")";
         var additionalHeaders = {};
         additionalHeaders["X-HTTP-Method"] = "MERGE";
         additionalHeaders["If-Match"] = "*";
-        return dataService.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
+        return baseSvc.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
     }
 
     /*
@@ -1095,7 +1097,7 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc','$q','$http', functio
     factory.uploadRest = function (w, dir, filename, file) {
         var deferred = jQuery.Deferred();
         var dataDig = "";
-        dataService.getDigest(w).then(function (dataDig) {
+        baseSvc.getDigest(w).then(function (dataDig) {
             factory.getFileBuffer(file).then(
                 function (arrayBuffer) {
                     jQuery.ajax({
@@ -1106,7 +1108,7 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc','$q','$http', functio
                         contentType: "application/json;odata=verbose",
                         headers: {
                             "accept": "application/json;odata=verbose",
-                            "X-RequestDigest": dataDig.d.GetContextWebInformation.FormDigestValue,
+                            "X-RequestDigest": dataDig.data.d.GetContextWebInformation.FormDigestValue,
                             "content-lenght": arrayBuffer.byteLenght,
                             "BinaryStringRequestBody": true
                         },
@@ -1146,9 +1148,9 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc','$q','$http', functio
     factory.updateFileItem = function (w, l, id, metadata) {
         var deferred = jQuery.Deferred();
         var url = w + "/_api/web/lists/getbytitle('" + l + "')/Items(" + id + ")/File/ListItemAllFields";
-        dataService.getDigest(w).then(function (data) {
+        baseSvc.getDigest(w).then(function (data) {
             var digest = data.d.GetContextWebInformation.FormDigestValue
-            dataService.getRest(url).then(function (data) {
+            baseSvc.getRest(url).then(function (data) {
                 var item = jQuery.extend({
                     "__metadata": {
                         "type": data.d.__metadata.type
@@ -1180,7 +1182,7 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc','$q','$http', functio
     }
     factory.copyFile = function (w, uriFile, newFileName) {
         var deferred = jQuery.Deferred();
-        dataService.getDigest(w).then(function (data) {
+        baseSvc.getDigest(w).then(function (data) {
             var digest = data.d.GetContextWebInformation.FormDigestValue
             var url = uriFile + "/copyto(strnewurl='" + newFileName + "',boverwrite=false)"
             jQuery.ajax({
@@ -1208,7 +1210,7 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc','$q','$http', functio
         */
 
         var deferred = jQuery.Deferred();
-        dataService.getDigest(w).then(function (data) {
+        baseSvc.getDigest(w).then(function (data) {
             var digest = data.d.GetContextWebInformation.FormDigestValue
             newurl = '" + newFileName + "', flags = 1
             var url = uriFile + "/moveto(newurl = '" + newFileName + "', flags = 1)"
