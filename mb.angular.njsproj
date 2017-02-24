@@ -40,9 +40,11 @@
     <Compile Include="src\mb.angular.js" />
     <Compile Include="src\mb.angular.filters.js" />
     <Compile Include="src\mb.lib.js" />
+    <Compile Include="src\Services\mb.angular.service.page.js" />
     <Compile Include="src\Services\mb.angular.service..config.js" />
     <Compile Include="src\Services\mb.angular.service.js" />
     <Compile Include="src\Services\mb.angular.service.search.js" />
+    <Compile Include="src\Services\mb.angular.service.list.js" />
     <Compile Include="src\Services\mb.angular.service.user.js" />
     <Compile Include="src\Services\mb.angular.service.nav.js" />
     <Compile Include="src\Services\mb.angular.service.mmd.js" />
