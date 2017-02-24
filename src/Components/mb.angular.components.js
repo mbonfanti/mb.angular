@@ -1,5 +1,16 @@
 ﻿angular.module("mb.angular.components", ['mb.angular', 'mb.angular.templates'])
-
+angular.module("mb.angular.components").directive("dirTrueFalse", function () {
+    return {
+        restrict: "AE",
+        link: function (scope, element, attrs) {
+            if (eval(attrs.val)) {
+                element.html('SI')
+            } else {
+                element.html('NO')
+            }
+        }
+    };
+});
 angular.module("mb.angular.components").component('socialBookmarkDocument', {
     // url: url completa del sito dove si trova l'elemento da controllare
     // actor: 1 document - 2 site - 3 
