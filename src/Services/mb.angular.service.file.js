@@ -1,4 +1,4 @@
-﻿angular.module("mb.sp").factory("fileSvc", function (baseSvc, $q, $http) {
+﻿angular.module("mb.angular").factory("fileSvc", function (baseSvc, $q, $http) {
 
     var factory = {};
     factory.getFolder = function (w, f) {
