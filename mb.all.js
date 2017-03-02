@@ -1064,7 +1064,7 @@ angular.module("mb.angular").factory("fileSvc", function (baseSvc, $q, $http) {
         var deferred = $.Deferred();
         factory.createFolder(webUrl, listName, folderName, folderContentTypeId)
             .done(function (data) {
-                baseSvc.updateListItem(webUrl, listName, data.d.Id, metadata)
+                itemsSvc.updateListItem(webUrl, listName, data.d.Id, metadata)
                     .done(function () {
                         deferred.resolve(data);
                     })
@@ -1114,20 +1114,20 @@ angular.module("mb.angular").factory("fileSvc", function (baseSvc, $q, $http) {
         var additionalHeaders = {};
         additionalHeaders["X-HTTP-Method"] = "MERGE";
         additionalHeaders["If-Match"] = "*";
-        return dataService.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
+        return baseSvc.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
     }
     factory.updateFolder = function (webUrl, listTitle, itemId, itemPayload) {
         var itemUrl = webUrl + "/_api/Web/Lists/GetByTitle('" + listTitle + "')/Items(" + itemId + ")";
         var additionalHeaders = {};
         additionalHeaders["X-HTTP-Method"] = "MERGE";
         additionalHeaders["If-Match"] = "*";
-        return dataService.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
+        return baseSvc.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
     }
 
     /*  Work With Files */
     factory.uploadRestMetadata = function (w, dir, filename, file, metadata) {
         return factory.uploadRest(w, dir, filename, file).then(function (data) {
-            return baseSvc.updateListItem(w, data.d.ListItemAllFields.ParentList.Title, data.d.ListItemAllFields.Id, metadata)
+            return itemsSvc.updateListItem(w, data.d.ListItemAllFields.ParentList.Title, data.d.ListItemAllFields.Id, metadata)
         })
     }
     factory.uploadRest = function (w, dir, filename, file) {
@@ -1183,9 +1183,9 @@ angular.module("mb.angular").factory("fileSvc", function (baseSvc, $q, $http) {
     factory.updateFileItem = function (w, l, id, metadata) {
         var deferred = $.Deferred();
         var url = w + "/_api/web/lists/getbytitle('" + l + "')/Items(" + id + ")/File/ListItemAllFields";
-        dataService.getDigest(w).then(function (data) {
+        baseSvc.getDigest(w).then(function (data) {
             var digest = data.d.GetContextWebInformation.FormDigestValue
-            dataService.getRest(url).then(function (data) {
+            baseSvc.getRest(url).then(function (data) {
                 var item = $.extend({
                     "__metadata": {
                         "type": data.d.__metadata.type
@@ -1217,7 +1217,7 @@ angular.module("mb.angular").factory("fileSvc", function (baseSvc, $q, $http) {
     }
     factory.copyFile = function (w, uriFile, newFileName) {
         var deferred = $.Deferred();
-        dataService.getDigest(w).then(function (data) {
+        baseSvc.getDigest(w).then(function (data) {
             var digest = data.d.GetContextWebInformation.FormDigestValue
             var url = uriFile + "/copyto(strnewurl='" + newFileName + "',boverwrite=false)"
             $.ajax({
@@ -1245,7 +1245,7 @@ angular.module("mb.angular").factory("fileSvc", function (baseSvc, $q, $http) {
         */
 
         var deferred = $.Deferred();
-        dataService.getDigest(w).then(function (data) {
+        baseSvc.getDigest(w).then(function (data) {
             var digest = data.d.GetContextWebInformation.FormDigestValue
             newurl = '" + newFileName + "', flags = 1
             var url = uriFile + "/moveto(newurl = '" + newFileName + "', flags = 1)"
