@@ -994,7 +994,7 @@ angular.module("mb.angular").factory("commonSvc", ['baseSvc', '$http', function 
     // Utility
     return factory;
 }])
-angular.module("mb.angular").factory("fileSvc", ['baseSvc', 'itemsSvc', '$http', function (baseSvc, $http, itemsSvc) {
+angular.module("mb.angular").factory("fileSvc", ['baseSvc',  '$http','itemsSvc', function (baseSvc, $http, itemsSvc) {
 
     var factory = {};
     factory.getFolder = function (w, f) {
