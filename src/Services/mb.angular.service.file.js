@@ -1,4 +1,4 @@
-﻿angular.module("mb.angular").factory("fileSvc", function (baseSvc, $q, $http) {
+﻿angular.module("mb.angular").factory("fileSvc", ['baseSvc', 'itemSvc', '$http', function (baseSvc, $http, itemSvc) {
 
     var factory = {};
     factory.getFolder = function (w, f) {
@@ -273,4 +273,4 @@
     }
 
     return factory;
-});
+}]);
