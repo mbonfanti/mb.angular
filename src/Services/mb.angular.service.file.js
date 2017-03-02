@@ -1,4 +1,4 @@
-﻿angular.module("mb.angular").factory("fileSvc", ['baseSvc', 'itemSvc', '$http', function (baseSvc, $http, itemSvc) {
+﻿angular.module("mb.angular").factory("fileSvc", ['baseSvc', 'itemsSvc', '$http', function (baseSvc, $http, itemsSvc) {
 
     var factory = {};
     factory.getFolder = function (w, f) {
