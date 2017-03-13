@@ -69,6 +69,7 @@
         return deferred.promise();
 
     }
+
     factory.deleteItem = function (url, listname, id) {
 
         var restUrl = url + "/_api/web/lists/getbytitle('" + listname + "')/items(" + id + ")";
@@ -79,13 +80,14 @@
                 contentType: "application/json;odata=verbose",
                 headers: {
                     "Accept": "application/json;odata=verbose",
-                    "X-RequestDigest": data.d.GetContextWebInformation.FormDigestValue,
+                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
                     "IF-MATCH": "*",
                     "X-HTTP-Method": "DELETE"
                 }
             });
         });
     };
+
     factory.approveItem = function (w, l, id, status) {
         // Settiamo il moderation status to
 

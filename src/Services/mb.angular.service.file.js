@@ -182,6 +182,43 @@
 
         return deferred.promise();
     };
+    factory.attachFile = function (w, list, filename, file) {
+        // endpoint rest: http://site url/_api/web/lists/getbytitle('list title')/items(item id)/AttachmentFiles/ add(FileName='file name')
+
+        var deferred = $.Deferred();
+        var dataDig = "";
+        baseSvc.getDigest(w).then(function (dataDig) {
+            factory.getFileBuffer(file).then(
+                function (arrayBuffer) {
+                    $.ajax({
+                        url: w + "/_api/web/getFolderByServerRelativeUrl('" + dir + "')/files" + "/Add(url='" + filename + "', overwrite=true)?$expand=ListItemAllFields,ListItemAllFields/ParentList",
+                        type: "POST",
+                        data: arrayBuffer,
+                        processData: false,
+                        contentType: "application/json;odata=verbose",
+                        headers: {
+                            "accept": "application/json;odata=verbose",
+                            "X-RequestDigest": dataDig.data.d.GetContextWebInformation.FormDigestValue,
+                            "content-lenght": arrayBuffer.byteLenght,
+                            "BinaryStringRequestBody": true
+                        },
+                        success: function (data) {
+                            deferred.resolve(data);
+                        },
+                        error: function (err) {
+                            deferred.reject(err);
+                        }
+                    });
+                },
+                function (err) {
+                    deferred.reject(err);
+                }
+            );
+        })
+        return deferred.promise();
+    }
+
+
 
     // WORK FILES
     factory.updateFileItem = function (w, l, id, metadata) {

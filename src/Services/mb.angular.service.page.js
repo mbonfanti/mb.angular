@@ -95,5 +95,48 @@
     }
 
     // Example: factory.createPage(web, 'tesiamo.aspx', 'Pagina Menu');
+
+    factory.changePageLyout = function (url, pageUrl, pageLayoutUrl, pageLyoutName) {
+        // { 'PublishingPageLayout': { 'Type': 'Url', 'Value': '/_catalogs/masterpage/ArticleLeft.aspx, Image on left' } }
+        var properties = { 'PublishingPageLayout': { 'Type': 'Url', 'Value': pageLayoutUrl + ', ' + pageLyoutName } };  //Image on Left page layout
+        var context = SP.ClientContext.get_current();
+        var site = context.get_site();
+        var web = context.get_web();
+        var pageFile = web.getFileByServerRelativeUrl(pageUrl);
+        var pageItem = pageFile.get_listItemAllFields();
+        context.load(site);
+        context.load(pageItem);
+
+        context.executeQueryAsync(
+            function () {
+
+                for (var propName in properties) {
+                    var property = properties[propName];
+                    var itemValue = pageItem.get_item(propName);
+                    if (property.Type == "Url") {
+                        var pagelayoutUrl = site.get_url() + property.Value.split(',')[0].trim();
+                        itemValue.set_url(pagelayoutUrl);
+                        var pagelayoutDesc = property.Value.split(',')[1].trim();
+                        itemValue.set_description(pagelayoutDesc);
+                        pageItem.set_item(propName, itemValue);
+                    }
+
+                }
+                pageItem.update();
+                context.load(pageItem);
+                context.executeQueryAsync(
+                    function () {
+                        console.log(pageItem);
+                    },
+                    function (sender, args) {
+                        console.log('Failed: ' + args.get_message());
+                    }
+                );
+            },
+            function (sender, args) {
+                console.log('Failed: ' + args.get_message());
+            })
+
+    }
     return factory;
 }])

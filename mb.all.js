@@ -772,66 +772,7 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
         return deferred.promise;
 
     }
-    factory.getWebProperty = function (w, p) {
-        return $http({
-            url: w + "/_api/web/AllProperties?select='" + p + "'",
-            method: "GET",
-            headers: {
-                "Accept": "application/json; odata=verbose",
-            }
-        });
-    }
-
-    factory.setWebProperty = function (w, p, v) {
-        var deferred = $q.defer();
-
-        var ctx = new SP.ClientContext.get_current();
-        var web = ctx.get_site().get_rootWeb();
-        this.props = web.get_allProperties();
-        this.props.set_item(p, v);
-        ctx.load(web);
-        ctx.executeQueryAsync(
-            Function.createDelegate(this, gotProperty),
-            Function.createDelegate(this, failedGettingProperty)
-        )
-
-        function gotProperty() {
-
-            deferred.resolve(this.props.get_item(p));
-        }
-        function failedGettingProperty() {
-            deferred.reject(data);
-        }
-        return deferred.promise;
-    }
-
-
-    // Work With Folders
-    factory.existFolder = function (w, l, u, f) {
-        var deferred = jQuery.Deferred();
-        var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
-        factory.getRest(tempUrl)
-            .then(function (data) {
-                deferred.resolve(data.data.d.Files.results);
-            },
-            function (error) {
-                // Non esiste, creiamolo
-                factory.createFolder(w, l, f)
-                    .then(function (data) {
-                        console.log(data)
-                        deferred.resolve([]);
-                    },
-                    function (error) {
-                        // Non esiste, creiamolo
-                        console.log(error)
-                        deferred.reject(error);
-                    });
-
-            });
-
-        return deferred;
-
-    }
+   
     factory.createFolder = function (w, u, f) {
         $http.defaults.headers.post["Content-Type"] = "application/json";
         var item = { "__metadata": { 'type': 'SP.Folder' }, 'ServerRelativeUrl': u }
@@ -920,7 +861,82 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
 
         return deferred.promise;
     }
+    // Sono stati spostati nel webSvc
+    factory.getWebProperty = function (w, p) {
+        return $http({
+            url: w + "/_api/web/AllProperties?select='" + p + "'",
+            method: "GET",
+            headers: {
+                "Accept": "application/json; odata=verbose",
+            }
+        });
+    }
+    factory.setWebPropertyRest = function (web, property, value) {
+        return baseSvc.getDigest(web).then(function (data) {
+            return $.ajax({
+                url: web + "/_api/web",
+                type: "POST",
+                data: '{ "__metadata": { "type": "SP.Web" }, "' + property + '": "' + value + '" }',
+                headers: {
+                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
+                    "accept": "application/json;odata=verbose",
+                    "content-type": "application/json;odata=verbose",
+                    "X-HTTP-Method": "MERGE"
+                }
+            });
+        });
+    };
 
+    factory.setWebProperty = function (w, p, v) {
+        var deferred = $q.defer();
+
+        var ctx = new SP.ClientContext.get_current();
+        var web = ctx.get_site().get_rootWeb();
+        this.props = web.get_allProperties();
+        this.props.set_item(p, v);
+        ctx.load(web);
+        ctx.executeQueryAsync(
+            Function.createDelegate(this, gotProperty),
+            Function.createDelegate(this, failedGettingProperty)
+        )
+
+        function gotProperty() {
+
+            deferred.resolve(this.props.get_item(p));
+        }
+        function failedGettingProperty() {
+            deferred.reject(data);
+        }
+        return deferred.promise;
+    }
+
+
+    // Work With Folders
+    factory.existFolder = function (w, l, u, f) {
+        var deferred = jQuery.Deferred();
+        var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
+        factory.getRest(tempUrl)
+            .then(function (data) {
+                deferred.resolve(data.data.d.Files.results);
+            },
+            function (error) {
+                // Non esiste, creiamolo
+                factory.createFolder(w, l, f)
+                    .then(function (data) {
+                        console.log(data)
+                        deferred.resolve([]);
+                    },
+                    function (error) {
+                        // Non esiste, creiamolo
+                        console.log(error)
+                        deferred.reject(error);
+                    });
+
+            });
+
+        return deferred;
+
+    }
 
     return factory;
 }])
@@ -1178,6 +1194,43 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc',  '$http','itemsSvc',
 
         return deferred.promise();
     };
+    factory.attachFile = function (w, list, filename, file) {
+        // endpoint rest: http://site url/_api/web/lists/getbytitle('list title')/items(item id)/AttachmentFiles/ add(FileName='file name')
+
+        var deferred = $.Deferred();
+        var dataDig = "";
+        baseSvc.getDigest(w).then(function (dataDig) {
+            factory.getFileBuffer(file).then(
+                function (arrayBuffer) {
+                    $.ajax({
+                        url: w + "/_api/web/getFolderByServerRelativeUrl('" + dir + "')/files" + "/Add(url='" + filename + "', overwrite=true)?$expand=ListItemAllFields,ListItemAllFields/ParentList",
+                        type: "POST",
+                        data: arrayBuffer,
+                        processData: false,
+                        contentType: "application/json;odata=verbose",
+                        headers: {
+                            "accept": "application/json;odata=verbose",
+                            "X-RequestDigest": dataDig.data.d.GetContextWebInformation.FormDigestValue,
+                            "content-lenght": arrayBuffer.byteLenght,
+                            "BinaryStringRequestBody": true
+                        },
+                        success: function (data) {
+                            deferred.resolve(data);
+                        },
+                        error: function (err) {
+                            deferred.reject(err);
+                        }
+                    });
+                },
+                function (err) {
+                    deferred.reject(err);
+                }
+            );
+        })
+        return deferred.promise();
+    }
+
+
 
     // WORK FILES
     factory.updateFileItem = function (w, l, id, metadata) {
@@ -1341,6 +1394,7 @@ angular.module("mb.angular").factory("itemsSvc", ['baseSvc', '$http', function (
         return deferred.promise();
 
     }
+
     factory.deleteItem = function (url, listname, id) {
 
         var restUrl = url + "/_api/web/lists/getbytitle('" + listname + "')/items(" + id + ")";
@@ -1351,13 +1405,14 @@ angular.module("mb.angular").factory("itemsSvc", ['baseSvc', '$http', function (
                 contentType: "application/json;odata=verbose",
                 headers: {
                     "Accept": "application/json;odata=verbose",
-                    "X-RequestDigest": data.d.GetContextWebInformation.FormDigestValue,
+                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
                     "IF-MATCH": "*",
                     "X-HTTP-Method": "DELETE"
                 }
             });
         });
     };
+
     factory.approveItem = function (w, l, id, status) {
         // Settiamo il moderation status to
 
@@ -2210,6 +2265,49 @@ angular.module("mb.angular").factory("pageSvc", ['baseSvc', '$q', '$http', 'item
     }
 
     // Example: factory.createPage(web, 'tesiamo.aspx', 'Pagina Menu');
+
+    factory.changePageLyout = function (url, pageUrl, pageLayoutUrl, pageLyoutName) {
+        // { 'PublishingPageLayout': { 'Type': 'Url', 'Value': '/_catalogs/masterpage/ArticleLeft.aspx, Image on left' } }
+        var properties = { 'PublishingPageLayout': { 'Type': 'Url', 'Value': pageLayoutUrl + ', ' + pageLyoutName } };  //Image on Left page layout
+        var context = SP.ClientContext.get_current();
+        var site = context.get_site();
+        var web = context.get_web();
+        var pageFile = web.getFileByServerRelativeUrl(pageUrl);
+        var pageItem = pageFile.get_listItemAllFields();
+        context.load(site);
+        context.load(pageItem);
+
+        context.executeQueryAsync(
+            function () {
+
+                for (var propName in properties) {
+                    var property = properties[propName];
+                    var itemValue = pageItem.get_item(propName);
+                    if (property.Type == "Url") {
+                        var pagelayoutUrl = site.get_url() + property.Value.split(',')[0].trim();
+                        itemValue.set_url(pagelayoutUrl);
+                        var pagelayoutDesc = property.Value.split(',')[1].trim();
+                        itemValue.set_description(pagelayoutDesc);
+                        pageItem.set_item(propName, itemValue);
+                    }
+
+                }
+                pageItem.update();
+                context.load(pageItem);
+                context.executeQueryAsync(
+                    function () {
+                        console.log(pageItem);
+                    },
+                    function (sender, args) {
+                        console.log('Failed: ' + args.get_message());
+                    }
+                );
+            },
+            function (sender, args) {
+                console.log('Failed: ' + args.get_message());
+            })
+
+    }
     return factory;
 }])
 angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', function (baseSvc, $q, $http) {
@@ -2677,6 +2775,89 @@ angular.module("mb.angular").factory("adUserSvc", ['commonSvc', 'baseSvc', '$q',
         });
         return deferred.promise();
     }
+    return factory;
+}])
+angular.module("mb.angular").factory("webSvc", ['baseSvc', '$q', '$http', 'commonSvc', function (baseSvc, $q, $http, commonSvc) {
+
+    var factory = {};
+    factory.headers = { "accept": "application/json;odata=verbose" };
+
+    factory.getWebProperty = function (w, p) {
+        return $http({
+            url: w + "/_api/web/AllProperties?select='" + p + "'",
+            method: "GET",
+            headers: {
+                "Accept": "application/json; odata=verbose",
+            }
+        });
+    }
+    factory.setWebPropertyRest = function (web, property, value) {
+        return baseSvc.getDigest(web).then(function (data) {
+            return $.ajax({
+                url: web + "/_api/web",
+                type: "POST",
+                data: '{ "__metadata": { "type": "SP.Web" }, "' + property + '": "' + value + '" }',
+                headers: {
+                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
+                    "accept": "application/json;odata=verbose",
+                    "content-type": "application/json;odata=verbose",
+                    "X-HTTP-Method": "MERGE"
+                }
+            });
+        });
+    };
+
+    factory.setWebProperty = function (w, p, v) {
+        var deferred = $q.defer();
+
+        var ctx = new SP.ClientContext.get_current();
+        var web = ctx.get_site().get_rootWeb();
+        this.props = web.get_allProperties();
+        this.props.set_item(p, v);
+        ctx.load(web);
+        ctx.executeQueryAsync(
+            Function.createDelegate(this, gotProperty),
+            Function.createDelegate(this, failedGettingProperty)
+        )
+
+        function gotProperty() {
+
+            deferred.resolve(this.props.get_item(p));
+        }
+        function failedGettingProperty() {
+            deferred.reject(data);
+        }
+        return deferred.promise;
+    }
+
+
+    // Work With Folders
+    factory.existFolder = function (w, l, u, f) {
+        var deferred = jQuery.Deferred();
+        var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
+        factory.getRest(tempUrl)
+            .then(function (data) {
+                deferred.resolve(data.data.d.Files.results);
+            },
+            function (error) {
+                // Non esiste, creiamolo
+                factory.createFolder(w, l, f)
+                    .then(function (data) {
+                        console.log(data)
+                        deferred.resolve([]);
+                    },
+                    function (error) {
+                        // Non esiste, creiamolo
+                        console.log(error)
+                        deferred.reject(error);
+                    });
+
+            });
+
+        return deferred;
+
+    }
+
     return factory;
 }])
 angular.module("mb.angular.components", ['mb.angular', 'mb.angular.templates'])
