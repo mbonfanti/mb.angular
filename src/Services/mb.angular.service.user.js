@@ -29,9 +29,11 @@
             headers: factory.headers
         })
             .then(function (data) {
-                var tempUser = data.data.d
+                var tempUser = data.data.d;
                 tempUser.uniqueID = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-                angular.merge(tempUser, commonSvc.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'))
+                if (tempUser.UserProfileProperties != undefined) {
+                    angular.merge(tempUser, commonSvc.resultsToObject(tempUser.UserProfileProperties.results, 'Key', 'Value'));
+                }
                 deferred.resolve(tempUser)
             },
             function (error) {
