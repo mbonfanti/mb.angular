@@ -4,7 +4,9 @@
 */
 var console = console || { "log": function () { } };
 
-/* Inizializzazione della libreria MB */
+/* 
+    Inizializzazione della libreria MB 
+*/
 
 var mb = mb || {};
 mb.url = "";
@@ -37,7 +39,7 @@ mb.sp.getRestFilter = function (restUrl, f) {
         }
     });
 
-};
+}; 
 
 // Helper per la chiamata rest al web
 mb.sp.webData = function (w, f) {
