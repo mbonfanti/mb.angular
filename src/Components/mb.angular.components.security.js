@@ -35,7 +35,7 @@ angular.module("mb.angular.components").directive('showOnRowHover', function () 
 //        restrict: 'AE',
 //        template: '<span ng-transclude ng-if="$ctrl.permission"></span><div ng-if="$ctrl.error">{{ $ctrl.errorMessage }}</div>',
 //        transclude: true,
-//        controlllerAs: '$ctrl',
+//        controllerAs: '$ctrl',
 //        scope: {
 //            perm: '@',
 //            user: '@'

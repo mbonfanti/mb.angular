@@ -68,7 +68,7 @@
     factory.chekPermissionOnWeb = function (w, a, p) {
         /*
          * Controlla se la lista di destinazione contiene il permesso che passiamo come paramentro
-         * chekPermissionOnList(webUrl,'Documents','i:0#.f|membership|jdoe@tenant.onmicrosoft.com','editListItems')
+         * chekPermissionOnList(webUrl,,'i:0#.f|membership|jdoe@tenant.onmicrosoft.com','editListItems')
          */
         var deferred = $q.defer();
         factory.getWebUserEffectivePermissions(w, a)
