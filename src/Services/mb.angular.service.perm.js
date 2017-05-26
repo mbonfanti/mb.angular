@@ -73,7 +73,7 @@
         var deferred = $q.defer();
         factory.getWebUserEffectivePermissions(w, a)
         .then(function (data) {
-            deferred.resolve(factory.findPermission(data.d.GetUserEffectivePermissions, p));
+            deferred.resolve(factory.findPermission(data.data.d.GetUserEffectivePermissions, p));
 
         },function (data) {
             deferred.reject(data);
