@@ -205,10 +205,9 @@ angular.module("mb.angular.components").component('followedListE', {
         ctrl.follow = spaceService.following;
         ctrl.$onInit = function () {
             socialService.getFollowed(ctrl.url, 6)
-            .success(function (data) {
+            .then(function (data) {
                 ctrl.follow = data.d.Followed.results;
-            })
-           .error(function (error) {
+            },function (error) {
                console.log(error);
            });
 

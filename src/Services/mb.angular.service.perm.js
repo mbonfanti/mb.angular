@@ -46,10 +46,10 @@
          */
         var deferred = $q.defer();
         factory.getListUserEffectivePermissions(w, l, a)
-        .success(function (data) {
-            deferred.resolve(factory.findPermission(data.d.GetUserEffectivePermissions,p));
+        .then(function (data) {
+            deferred.resolve(factory.findPermission(data.data.d.GetUserEffectivePermissions,p));
 
-        }).error(function (data) {
+        },function (data) {
             deferred.reject(data);
         })
         return deferred.promise;
@@ -72,10 +72,10 @@
          */
         var deferred = $q.defer();
         factory.getWebUserEffectivePermissions(w, a)
-        .success(function (data) {
-            deferred.resolve(factory.findPermission(data.d.GetUserEffectivePermissions, p));
+        .then(function (data) {
+            deferred.resolve(factory.findPermission(data.data.d.GetUserEffectivePermissions, p));
 
-        }).error(function (data) {
+        },function (data) {
             deferred.reject(data);
         })
         return deferred.promise;
@@ -146,15 +146,14 @@
             deferred.resolve(2)
         } else {
             $http.get(url)
-                       .success(function (jqXHR, textStatus, errorThrown) {
+                       .then(function (jqXHR, textStatus, errorThrown) {
                            if (textStatus === 200) {
                                deferred.resolve(0);
                            }
                            if (textStatus === 202) {
                                deferred.resolve(1);
                            }
-                       })
-                       .error(function (jqXHR, textStatus, errorThrown) {
+                       },function (jqXHR, textStatus, errorThrown) {
                            deferred.resolve(2);
                        })
         }
