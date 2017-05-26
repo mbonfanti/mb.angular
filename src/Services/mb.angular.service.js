@@ -81,10 +81,9 @@
          * Users & Docs = 6
          */
         baseSvc.getRest(w + "/_api/social.following/my/followed(types=" + a + ")")
-         .success(function (data) {
+         .then(function (data) {
              factory.following = data.d.Followed.results;
-         })
-           .error(function (error) {
+         },function (error) {
                console.log(error);
            });
     }

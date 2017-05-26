@@ -29,6 +29,7 @@
         }
         return deferred.promise;
     }
+
     factory.createPage = function (w, name, title, pageLayout) {
         return factory.getLayoutByName(w, pageLayout)
             .then(function (data) {
@@ -138,5 +139,15 @@
             })
 
     }
+
+    factory.editPage = function () {
+            if (document.forms['aspnetForm']['MSOLayout_InDesignMode'] != null) document.forms['aspnetForm']['MSOLayout_InDesignMode'].value = 1;
+            if (document.forms['aspnetForm']['MSOAuthoringConsole_FormContext'] != null) document.forms['aspnetForm']['MSOAuthoringConsole_FormContext'].value = 1;
+            if (document.forms['aspnetForm']['MSOSPWebPartManager_DisplayModeName'] != null) document.forms['aspnetForm']['MSOSPWebPartManager_DisplayModeName'].value = 'Design';
+            __doPostBack('ctl05','edit');
+        }
+     factory.savePage = function () {
+            CoreInvoke('PageActionClick', this)
+        }
     return factory;
 }])

@@ -99,14 +99,14 @@
         var t = false;
         var arrGroups = groups.split(';');
         baseSvc.getListFilter(url, "Gruppi", "")
-            .success(function (data) {
+            .then(function (data) {
 
                 for (var i = 0; i < arrGroups.length; i++) {
                     t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
                 }
                 deferred.resolve(t);
 
-            }).error(function (data) {
+            },function (data) {
 
 
                 deferred.reject(data);
