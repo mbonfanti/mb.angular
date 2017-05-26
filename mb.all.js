@@ -4,7 +4,9 @@
 */
 var console = console || { "log": function () { } };
 
-/* Inizializzazione della libreria MB */
+/* 
+    Inizializzazione della libreria MB 
+*/
 
 var mb = mb || {};
 mb.url = "";
@@ -37,7 +39,7 @@ mb.sp.getRestFilter = function (restUrl, f) {
         }
     });
 
-};
+}; 
 
 // Helper per la chiamata rest al web
 mb.sp.webData = function (w, f) {
@@ -1513,10 +1515,9 @@ angular.module("mb.angular").factory("socialService", ['baseSvc', '$q', '$http',
          * Users & Docs = 6
          */
         baseSvc.getRest(w + "/_api/social.following/my/followed(types=" + a + ")")
-         .success(function (data) {
+         .then(function (data) {
              factory.following = data.d.Followed.results;
-         })
-           .error(function (error) {
+         },function (error) {
                console.log(error);
            });
     }
@@ -2199,6 +2200,7 @@ angular.module("mb.angular").factory("pageSvc", ['baseSvc', '$q', '$http', 'item
         }
         return deferred.promise;
     }
+
     factory.createPage = function (w, name, title, pageLayout) {
         return factory.getLayoutByName(w, pageLayout)
             .then(function (data) {
@@ -2308,6 +2310,16 @@ angular.module("mb.angular").factory("pageSvc", ['baseSvc', '$q', '$http', 'item
             })
 
     }
+
+    factory.editPage = function () {
+            if (document.forms['aspnetForm']['MSOLayout_InDesignMode'] != null) document.forms['aspnetForm']['MSOLayout_InDesignMode'].value = 1;
+            if (document.forms['aspnetForm']['MSOAuthoringConsole_FormContext'] != null) document.forms['aspnetForm']['MSOAuthoringConsole_FormContext'].value = 1;
+            if (document.forms['aspnetForm']['MSOSPWebPartManager_DisplayModeName'] != null) document.forms['aspnetForm']['MSOSPWebPartManager_DisplayModeName'].value = 'Design';
+            __doPostBack('ctl05','edit');
+        }
+     factory.savePage = function () {
+            CoreInvoke('PageActionClick', this)
+        }
     return factory;
 }])
 angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', function (baseSvc, $q, $http) {
@@ -2358,10 +2370,10 @@ angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', funct
          */
         var deferred = $q.defer();
         factory.getListUserEffectivePermissions(w, l, a)
-        .success(function (data) {
+        .then(function (data) {
             deferred.resolve(factory.findPermission(data.d.GetUserEffectivePermissions,p));
 
-        }).error(function (data) {
+        },function (data) {
             deferred.reject(data);
         })
         return deferred.promise;
@@ -2384,10 +2396,10 @@ angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', funct
          */
         var deferred = $q.defer();
         factory.getWebUserEffectivePermissions(w, a)
-        .success(function (data) {
+        .then(function (data) {
             deferred.resolve(factory.findPermission(data.d.GetUserEffectivePermissions, p));
 
-        }).error(function (data) {
+        },function (data) {
             deferred.reject(data);
         })
         return deferred.promise;
@@ -2458,15 +2470,14 @@ angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', funct
             deferred.resolve(2)
         } else {
             $http.get(url)
-                       .success(function (jqXHR, textStatus, errorThrown) {
+                       .then(function (jqXHR, textStatus, errorThrown) {
                            if (textStatus === 200) {
                                deferred.resolve(0);
                            }
                            if (textStatus === 202) {
                                deferred.resolve(1);
                            }
-                       })
-                       .error(function (jqXHR, textStatus, errorThrown) {
+                       },function (jqXHR, textStatus, errorThrown) {
                            deferred.resolve(2);
                        })
         }
@@ -2642,14 +2653,14 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         var t = false;
         var arrGroups = groups.split(';');
         baseSvc.getListFilter(url, "Gruppi", "")
-            .success(function (data) {
+            .then(function (data) {
 
                 for (var i = 0; i < arrGroups.length; i++) {
                     t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
                 }
                 deferred.resolve(t);
 
-            }).error(function (data) {
+            },function (data) {
 
 
                 deferred.reject(data);
@@ -3069,10 +3080,9 @@ angular.module("mb.angular.components").component('followedListE', {
         ctrl.follow = spaceService.following;
         ctrl.$onInit = function () {
             socialService.getFollowed(ctrl.url, 6)
-            .success(function (data) {
+            .then(function (data) {
                 ctrl.follow = data.d.Followed.results;
-            })
-           .error(function (error) {
+            },function (error) {
                console.log(error);
            });
 
