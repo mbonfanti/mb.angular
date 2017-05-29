@@ -183,7 +183,7 @@
 // Componenti Manged Metadata
 angular.module("mb.angular").component('getTerm', {
 
-    template: '<span>{{ $ctrl.term.Name }}</span>',
+    template: '<a class="mcl-newsitem--contents--showcaselink" ng-href="{{$ctrl.showcaseUrl}}"><span>{{ $ctrl.term.Name }}</span></a>',
     transclude: true,
     bindings: {
         termid: '@'
@@ -191,12 +191,16 @@ angular.module("mb.angular").component('getTerm', {
     controller: function (mmdSvc, spaceService, filtraTermsFilter) {
         var ctrl = this;
         ctrl.term = {}
+        ctrl.showcaseUrl = "";
         ctrl.$onInit = function () {
 
             mmdSvc.getTermByGuid(ctrl.termid)
                 .then(
                 function (data) {
-                    ctrl.term = data
+                    ctrl.term = data;
+                    if (data.LocalCustomProperties != undefined && data.LocalCustomProperties._Sys_Nav_SimpleLinkUrl != undefined) {
+                        ctrl.showcaseUrl = data.LocalCustomProperties._Sys_Nav_SimpleLinkUrl;
+                    }
                 },
                 function (error) {
                     console.log(error)
