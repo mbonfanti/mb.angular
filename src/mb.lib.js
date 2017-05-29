@@ -247,7 +247,7 @@ mb.sp.user.checkPermissions = function (url, perm) {
 
     call.done(function (data, textStatus, jqXHR) {
         var manageListsPerms = new SP.BasePermissions();
-        manageListsPerms.initPropertiesFromJson(data.d.EffectiveBasePermissions);
+        manageListsPerms.initPropertiesFromJson(data.data.d.EffectiveBasePermissions);
         // SP.PermissionKind.manageLists
         var manageLists = manageListsPerms.has(perm);
         deferred.resolve(manageLists);

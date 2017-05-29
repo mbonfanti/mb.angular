@@ -80,7 +80,7 @@
         var t = false;
         var arrGroups = groups.split(';');
         factory.getDigest(url).then(function (data) {
-            var digest = data.d.GetContextWebInformation.FormDigestValue;
+            var digest = data.data.d.GetContextWebInformation.FormDigestValue;
             baseSvc.getUserGroups(url, userId, digest)
                 .done(function (r) {
                     for (i === 0; i < arrGroups; i++) {
@@ -102,7 +102,7 @@
             .then(function (data) {
 
                 for (var i = 0; i < arrGroups.length; i++) {
-                    t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
+                    t = commonSvc.arrayContiene(data.data.d.results, arrGroups[i])
                 }
                 deferred.resolve(t);
 
