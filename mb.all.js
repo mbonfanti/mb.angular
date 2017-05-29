@@ -247,7 +247,7 @@ mb.sp.user.checkPermissions = function (url, perm) {
 
     call.done(function (data, textStatus, jqXHR) {
         var manageListsPerms = new SP.BasePermissions();
-        manageListsPerms.initPropertiesFromJson(data.d.EffectiveBasePermissions);
+        manageListsPerms.initPropertiesFromJson(data.data.d.EffectiveBasePermissions);
         // SP.PermissionKind.manageLists
         var manageLists = manageListsPerms.has(perm);
         deferred.resolve(manageLists);
@@ -1141,7 +1141,31 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc',  '$http','itemsSvc',
         additionalHeaders["If-Match"] = "*";
         return baseSvc.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
     }
+    factory.existFolder = function (w, l, u, f) {
+        var deferred = jQuery.Deferred();
+        var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
+        factory.getRest(tempUrl)
+            .then(function (data) {
+                deferred.resolve(data.data.d.Files.results);
+            },
+            function (error) {
+                // Non esiste, creiamolo
+                factory.createFolder(w, l, f)
+                    .then(function (data) {
+                        console.log(data)
+                        deferred.resolve([]);
+                    },
+                    function (error) {
+                        // Non esiste, creiamolo
+                        console.log(error)
+                        deferred.reject(error);
+                    });
 
+            });
+
+        return deferred;
+
+    }
     /*  Work With Files */
     factory.uploadRestMetadata = function (w, dir, filename, file, metadata) {
         return factory.uploadRest(w, dir, filename, file).then(function (data) {
@@ -2397,7 +2421,7 @@ angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', funct
         var deferred = $q.defer();
         factory.getWebUserEffectivePermissions(w, a)
         .then(function (data) {
-            deferred.resolve(factory.findPermission(data.d.GetUserEffectivePermissions, p));
+            deferred.resolve(factory.findPermission(data.data.d.GetUserEffectivePermissions, p));
 
         },function (data) {
             deferred.reject(data);
@@ -2634,7 +2658,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
         var t = false;
         var arrGroups = groups.split(';');
         factory.getDigest(url).then(function (data) {
-            var digest = data.d.GetContextWebInformation.FormDigestValue;
+            var digest = data.data.d.GetContextWebInformation.FormDigestValue;
             baseSvc.getUserGroups(url, userId, digest)
                 .done(function (r) {
                     for (i === 0; i < arrGroups; i++) {
@@ -2656,7 +2680,7 @@ angular.module("mb.angular").factory("userSvc", ['baseSvc', '$q', '$http', 'comm
             .then(function (data) {
 
                 for (var i = 0; i < arrGroups.length; i++) {
-                    t = commonSvc.arrayContiene(data.d.results, arrGroups[i])
+                    t = commonSvc.arrayContiene(data.data.d.results, arrGroups[i])
                 }
                 deferred.resolve(t);
 
@@ -3277,5 +3301,5 @@ angular.module("mb.angular.components").directive('showOnRowHover', function () 
 
 //});
 angular.module('mb.angular.templates', []).run(['$templateCache', function($templateCache) {$templateCache.put('Like/Like.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');
-$templateCache.put('UserBadge/userBadge.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');
-$templateCache.put('Bookmark/Bookmarks.html','<div class="mcl-add-bookmark pull-right">\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="$ctrl.isFollow" ng-click="$ctrl.follow(false)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon mcl-full-icon"></span>\r\n        <span class="mcl-bookmark-txt">remove bookmark</span>\r\n    </a>\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="!$ctrl.isFollow" ng-click="$ctrl.follow(true)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon"></span>\r\n        <span class="mcl-bookmark-txt">add bookmark</span>\r\n    </a>\r\n</div>');}]);
+$templateCache.put('Bookmark/Bookmarks.html','<div class="mcl-add-bookmark pull-right">\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="$ctrl.isFollow" ng-click="$ctrl.follow(false)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon mcl-full-icon"></span>\r\n        <span class="mcl-bookmark-txt">remove bookmark</span>\r\n    </a>\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="!$ctrl.isFollow" ng-click="$ctrl.follow(true)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon"></span>\r\n        <span class="mcl-bookmark-txt">add bookmark</span>\r\n    </a>\r\n</div>');
+$templateCache.put('UserBadge/userBadge.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');}]);

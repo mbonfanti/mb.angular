@@ -127,7 +127,31 @@
         additionalHeaders["If-Match"] = "*";
         return baseSvc.executeJson(itemUrl, "POST", additionalHeaders, itemPayload);
     }
+    factory.existFolder = function (w, l, u, f) {
+        var deferred = jQuery.Deferred();
+        var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
+        factory.getRest(tempUrl)
+            .then(function (data) {
+                deferred.resolve(data.data.d.Files.results);
+            },
+            function (error) {
+                // Non esiste, creiamolo
+                factory.createFolder(w, l, f)
+                    .then(function (data) {
+                        console.log(data)
+                        deferred.resolve([]);
+                    },
+                    function (error) {
+                        // Non esiste, creiamolo
+                        console.log(error)
+                        deferred.reject(error);
+                    });
 
+            });
+
+        return deferred;
+
+    }
     /*  Work With Files */
     factory.uploadRestMetadata = function (w, dir, filename, file, metadata) {
         return factory.uploadRest(w, dir, filename, file).then(function (data) {
