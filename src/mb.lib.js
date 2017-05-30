@@ -466,8 +466,8 @@ mb.sp.bootstrapAppFoundation = function (appName,call) {
             //call();
         }, function (error) {
             console.log('Error Bootstrapping ')
-            alert('Errore Grave')
+            alert('Errore Grave.')
             mb.sp.log.logError(mb.sp.url,'')
         });
-    });
+    });  
 }
