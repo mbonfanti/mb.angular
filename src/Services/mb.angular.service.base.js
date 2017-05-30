@@ -365,35 +365,6 @@
         return deferred;
 
     }
-    factory.sendMail = function (w, from, to, body, subject) {
-        var urlTemplate = w + "/_api/SP.Utilities.Utility.SendEmail";
-        return baseSvc.getDigest(w).then(function (data) {
-            var ur = JSON.stringify({
-                'properties': {
-                    '__metadata': {
-                        'type': 'SP.Utilities.EmailProperties'
-                    },
-                    'From': from,
-                    'To': {
-                        'results': [to]
-                    },
-                    'Body': body,
-                    'Subject': subject
-                })
-            return $http({
-                url: urlTemplate,
-                method: "POST",
-                data: ur,
-                contentType: "application/json;odata=verbose",
-                headers: {
-                    "Accept": "application/json;odata=verbose",
-                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
-                    "IF-MATCH": "*",
-                    "X-HTTP-Method": "DELETE"
-                }
-            });
-        });
-
-    }
+   
     return factory;
 }])

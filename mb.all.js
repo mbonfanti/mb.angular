@@ -939,36 +939,7 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
         return deferred;
 
     }
-    factory.sendMail = function (w, from, to, body, subject) {
-        var urlTemplate = w + "/_api/SP.Utilities.Utility.SendEmail";
-        return baseSvc.getDigest(w).then(function (data) {
-            var ur = JSON.stringify({
-                'properties': {
-                    '__metadata': {
-                        'type': 'SP.Utilities.EmailProperties'
-                    },
-                    'From': from,
-                    'To': {
-                        'results': [to]
-                    },
-                    'Body': body,
-                    'Subject': subject
-                })
-            return $http({
-                url: urlTemplate,
-                method: "POST",
-                data: ur,
-                contentType: "application/json;odata=verbose",
-                headers: {
-                    "Accept": "application/json;odata=verbose",
-                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
-                    "IF-MATCH": "*",
-                    "X-HTTP-Method": "DELETE"
-                }
-            });
-        });
-
-    }
+   
     return factory;
 }])
 
@@ -1041,7 +1012,7 @@ angular.module("mb.angular").factory("commonSvc", ['baseSvc', '$http', function 
     // Utility
     return factory;
 }])
-angular.module("mb.angular").factory("fileSvc", ['baseSvc',  '$http','itemsSvc', function (baseSvc, $http, itemsSvc) {
+angular.module("mb.angular").factory("fileSvc", ['baseSvc', '$http', 'itemsSvc', function (baseSvc, $http, itemsSvc) {
 
     var factory = {};
     factory.getFolder = function (w, f) {
@@ -1154,7 +1125,9 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc',  '$http','itemsSvc',
     factory.renameFolder = function (webUrl, listTitle, itemId, item) {
         var itemUrl = webUrl + "/_api/Web/Lists/GetByTitle('" + listTitle + "')/Items(" + itemId + ")";
         var itemPayload = {};
-        itemPayload['__metadata'] = { 'type': item.__metadata.type };
+        itemPayload['__metadata'] = {
+            'type': item.__metadata.type
+        };
         itemPayload['Title'] = item.Title;
         itemPayload['FileLeafRef'] = item.Title;
         itemPayload['Project'] = item.Project;
@@ -1175,22 +1148,22 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc',  '$http','itemsSvc',
         var tempUrl = _spPageContextInfo.webAbsoluteUrl + "/_api/web/GetFolderByServerRelativeUrl('" + u + "')?$expand=Files"
         factory.getRest(tempUrl)
             .then(function (data) {
-                deferred.resolve(data.data.d.Files.results);
-            },
-            function (error) {
-                // Non esiste, creiamolo
-                factory.createFolder(w, l, f)
-                    .then(function (data) {
-                        console.log(data)
-                        deferred.resolve([]);
-                    },
-                    function (error) {
-                        // Non esiste, creiamolo
-                        console.log(error)
-                        deferred.reject(error);
-                    });
+                    deferred.resolve(data.data.d.Files.results);
+                },
+                function (error) {
+                    // Non esiste, creiamolo
+                    factory.createFolder(w, l, f)
+                        .then(function (data) {
+                                console.log(data)
+                                deferred.resolve([]);
+                            },
+                            function (error) {
+                                // Non esiste, creiamolo
+                                console.log(error)
+                                deferred.reject(error);
+                            });
 
-            });
+                });
 
         return deferred;
 
@@ -1281,6 +1254,31 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc',  '$http','itemsSvc',
                     deferred.reject(err);
                 }
             );
+        })
+        return deferred.promise();
+    }
+    factory.attachFileDelete = function (w, list, id, filename) {
+        // endpoint rest: http://site url/_api/web/lists/getbytitle('list title')/items(item id)/AttachmentFiles/ add(FileName='file name')
+        var endPoint = w + "/_api/web/lists/getbytitle('" + list + "')/items(" + id + ")/AttachmentFiles/getByFileName(FileName='" + filename + "')"
+        var deferred = $.Deferred();
+        var dataDig = "";
+        baseSvc.getDigest(w).then(function (dataDig) {
+            $.ajax({
+                url: endPoint,
+                type: "DELETE",
+                
+                contentType: "application/json;odata=verbose",
+                headers: {
+                    "accept": "application/json;odata=verbose",
+                    "X-RequestDigest": dataDig.data.d.GetContextWebInformation.FormDigestValue
+                },
+                success: function (data) {
+                    deferred.resolve(data);
+                },
+                error: function (err) {
+                    deferred.reject(err);
+                }
+            });
         })
         return deferred.promise();
     }
