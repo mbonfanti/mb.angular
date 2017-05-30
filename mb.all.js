@@ -939,7 +939,36 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
         return deferred;
 
     }
+    factory.sendMail = function (w, from, to, body, subject) {
+        var urlTemplate = w + "/_api/SP.Utilities.Utility.SendEmail";
+        return baseSvc.getDigest(w).then(function (data) {
+            var ur = JSON.stringify({
+                'properties': {
+                    '__metadata': {
+                        'type': 'SP.Utilities.EmailProperties'
+                    },
+                    'From': from,
+                    'To': {
+                        'results': [to]
+                    },
+                    'Body': body,
+                    'Subject': subject
+                })
+            return $http({
+                url: urlTemplate,
+                method: "POST",
+                data: ur,
+                contentType: "application/json;odata=verbose",
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "X-RequestDigest": data.data.d.GetContextWebInformation.FormDigestValue,
+                    "IF-MATCH": "*",
+                    "X-HTTP-Method": "DELETE"
+                }
+            });
+        });
 
+    }
     return factory;
 }])
 
@@ -1220,16 +1249,16 @@ angular.module("mb.angular").factory("fileSvc", ['baseSvc',  '$http','itemsSvc',
 
         return deferred.promise();
     };
-    factory.attachFile = function (w, list, filename, file) {
+    factory.attachFile = function (w, list, id, filename, file) {
         // endpoint rest: http://site url/_api/web/lists/getbytitle('list title')/items(item id)/AttachmentFiles/ add(FileName='file name')
-
+        var endPoint = w + "/_api/web/lists/getbytitle('" + list + "')/items(" + id + ")/AttachmentFiles/ add(FileName='" + filename + "')"
         var deferred = $.Deferred();
         var dataDig = "";
         baseSvc.getDigest(w).then(function (dataDig) {
             factory.getFileBuffer(file).then(
                 function (arrayBuffer) {
                     $.ajax({
-                        url: w + "/_api/web/getFolderByServerRelativeUrl('" + dir + "')/files" + "/Add(url='" + filename + "', overwrite=true)?$expand=ListItemAllFields,ListItemAllFields/ParentList",
+                        url: endPoint,
                         type: "POST",
                         data: arrayBuffer,
                         processData: false,
@@ -1955,7 +1984,7 @@ angular.module("mb.angular").factory("mmdSvc", ['commonSvc', 'baseSvc', '$q', '$
 // Componenti Manged Metadata
 angular.module("mb.angular").component('getTerm', {
 
-    template: '<span>{{ $ctrl.term.Name }}</span>',
+    template: '<a class="mcl-newsitem--contents--showcaselink" ng-href="{{$ctrl.showcaseUrl}}"><span>{{ $ctrl.term.Name }}</span></a>',
     transclude: true,
     bindings: {
         termid: '@'
@@ -1963,12 +1992,16 @@ angular.module("mb.angular").component('getTerm', {
     controller: function (mmdSvc, spaceService, filtraTermsFilter) {
         var ctrl = this;
         ctrl.term = {}
+        ctrl.showcaseUrl = "";
         ctrl.$onInit = function () {
 
             mmdSvc.getTermByGuid(ctrl.termid)
                 .then(
                 function (data) {
-                    ctrl.term = data
+                    ctrl.term = data;
+                    if (data.LocalCustomProperties != undefined && data.LocalCustomProperties._Sys_Nav_SimpleLinkUrl != undefined) {
+                        ctrl.showcaseUrl = data.LocalCustomProperties._Sys_Nav_SimpleLinkUrl;
+                    }
                 },
                 function (error) {
                     console.log(error)
@@ -1978,6 +2011,7 @@ angular.module("mb.angular").component('getTerm', {
         }
     }
 });
+
 angular.module("mb.angular").factory("navSvc", ['baseSvc', '$q', '$http', function (baseSvc, $q, $http) {
     var factory = {};
 
@@ -2416,7 +2450,7 @@ angular.module("mb.angular").factory("permSvc", ['baseSvc', '$q', '$http', funct
     factory.chekPermissionOnWeb = function (w, a, p) {
         /*
          * Controlla se la lista di destinazione contiene il permesso che passiamo come paramentro
-         * chekPermissionOnList(webUrl,'Documents','i:0#.f|membership|jdoe@tenant.onmicrosoft.com','editListItems')
+         * chekPermissionOnList(webUrl,,'i:0#.f|membership|jdoe@tenant.onmicrosoft.com','editListItems')
          */
         var deferred = $q.defer();
         factory.getWebUserEffectivePermissions(w, a)
@@ -3254,7 +3288,7 @@ angular.module("mb.angular.components").directive('showOnRowHover', function () 
 //        restrict: 'AE',
 //        template: '<span ng-transclude ng-if="$ctrl.permission"></span><div ng-if="$ctrl.error">{{ $ctrl.errorMessage }}</div>',
 //        transclude: true,
-//        controlllerAs: '$ctrl',
+//        controllerAs: '$ctrl',
 //        scope: {
 //            perm: '@',
 //            user: '@'
@@ -3300,6 +3334,6 @@ angular.module("mb.angular.components").directive('showOnRowHover', function () 
 //    }
 
 //});
-angular.module('mb.angular.templates', []).run(['$templateCache', function($templateCache) {$templateCache.put('Like/Like.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');
-$templateCache.put('Bookmark/Bookmarks.html','<div class="mcl-add-bookmark pull-right">\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="$ctrl.isFollow" ng-click="$ctrl.follow(false)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon mcl-full-icon"></span>\r\n        <span class="mcl-bookmark-txt">remove bookmark</span>\r\n    </a>\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="!$ctrl.isFollow" ng-click="$ctrl.follow(true)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon"></span>\r\n        <span class="mcl-bookmark-txt">add bookmark</span>\r\n    </a>\r\n</div>');
+angular.module('mb.angular.templates', []).run(['$templateCache', function($templateCache) {$templateCache.put('Bookmark/Bookmarks.html','<div class="mcl-add-bookmark pull-right">\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="$ctrl.isFollow" ng-click="$ctrl.follow(false)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon mcl-full-icon"></span>\r\n        <span class="mcl-bookmark-txt">remove bookmark</span>\r\n    </a>\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="!$ctrl.isFollow" ng-click="$ctrl.follow(true)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon"></span>\r\n        <span class="mcl-bookmark-txt">add bookmark</span>\r\n    </a>\r\n</div>');
+$templateCache.put('Like/Like.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');
 $templateCache.put('UserBadge/userBadge.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');}]);

@@ -206,16 +206,16 @@
 
         return deferred.promise();
     };
-    factory.attachFile = function (w, list, filename, file) {
+    factory.attachFile = function (w, list, id, filename, file) {
         // endpoint rest: http://site url/_api/web/lists/getbytitle('list title')/items(item id)/AttachmentFiles/ add(FileName='file name')
-
+        var endPoint = w + "/_api/web/lists/getbytitle('" + list + "')/items(" + id + ")/AttachmentFiles/ add(FileName='" + filename + "')"
         var deferred = $.Deferred();
         var dataDig = "";
         baseSvc.getDigest(w).then(function (dataDig) {
             factory.getFileBuffer(file).then(
                 function (arrayBuffer) {
                     $.ajax({
-                        url: w + "/_api/web/getFolderByServerRelativeUrl('" + dir + "')/files" + "/Add(url='" + filename + "', overwrite=true)?$expand=ListItemAllFields,ListItemAllFields/ParentList",
+                        url: endPoint,
                         type: "POST",
                         data: arrayBuffer,
                         processData: false,
