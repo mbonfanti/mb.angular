@@ -201,15 +201,14 @@ mb.sp.user.getAllProfile = function (url, filter) {
 }
 mb.sp.user.User = function (w, filter) {
     var dfd = $.Deferred();
-   mb.sp.user.getCurrentUser(url, filter)
+   mb.sp.user.getCurrentUser(w, filter)
         .then(function (data) {
             mb.user = data.d;
-            dfd.resolve( mb.user)
-        },
-                function (error) {
-
-                    dfd.resolve(mb.user)
-                })
+            dfd.resolve(mb.user)
+        },function (error) {
+             dfd.reject(false)
+            })
+              return dfd.promise();
 };
 mb.sp.user.getCurrentUser = function (w, filter) {
     if (filter === undefined) { filter === '' }
@@ -461,7 +460,7 @@ mb.sp.bootstrapAppFoundation = function (appName,call) {
 
         $.when(d1, d2).then(function (d1, d2) {
             console.log('Bootstrap ' + appName)
-            mb.user = d1;
+            
             mb.web = d2[0].d;
             angular.bootstrap(document, [appName]);
             //call();
