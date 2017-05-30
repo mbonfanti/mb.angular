@@ -448,7 +448,9 @@ mb.sp.bootstrapApp = function (appName,call) {
             mb.sp.log.logError(mb.sp.url,'')
         });
     });
-    mb.sp.bootstrapAppFoundation = function (appName,call) {
+    
+}
+mb.sp.bootstrapAppFoundation = function (appName,call) {
 
     SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function () {
 
@@ -470,7 +472,6 @@ mb.sp.bootstrapApp = function (appName,call) {
         });
     });
 }
-
 angular.module("mb.angular", ['mb.angular.templates', 'mb.angular.components']);
 
 angular.module("mb.angular").filter('filtraTerms', function () {

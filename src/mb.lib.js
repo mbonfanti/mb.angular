@@ -448,7 +448,9 @@ mb.sp.bootstrapApp = function (appName,call) {
             mb.sp.log.logError(mb.sp.url,'')
         });
     });
-    mb.sp.bootstrapAppFoundation = function (appName,call) {
+    
+}
+mb.sp.bootstrapAppFoundation = function (appName,call) {
 
     SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function () {
 
