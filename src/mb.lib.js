@@ -199,6 +199,18 @@ mb.sp.user.getAllProfile = function (url, filter) {
 
     return dfd.promise();
 }
+mb.sp.user.User = function (w, filter) {
+    var dfd = $.Deferred();
+   mb.sp.user.getCurrentUser(url, filter)
+        .then(function (data) {
+            mb.user = data.d;
+            dfd.resolve( mb.user)
+        },
+                function (error) {
+
+                    dfd.resolve(mb.user)
+                })
+};
 mb.sp.user.getCurrentUser = function (w, filter) {
     if (filter === undefined) { filter === '' }
     var url = w + "/_api/web/currentuser?" + filter;
@@ -425,6 +437,27 @@ mb.sp.bootstrapApp = function (appName,call) {
         var d3 = mb.sp.loadTaxonomy();
 
         $.when(d1, d2, d3).then(function (d1, d2, d3) {
+            console.log('Bootstrap ' + appName)
+            mb.user = d1;
+            mb.web = d2[0].d;
+            angular.bootstrap(document, [appName]);
+            //call();
+        }, function (error) {
+            console.log('Error Bootstrapping ')
+            alert('Errore Grave')
+            mb.sp.log.logError(mb.sp.url,'')
+        });
+    });
+    mb.sp.bootstrapAppFoundation = function (appName,call) {
+
+    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function () {
+
+        mb.sp.url = _spPageContextInfo.webAbsoluteUrl;
+        var d1 = mb.sp.user.User(mb.sp.url, '$expand=Groups');
+        var d2 = mb.sp.webData(mb.sp.url, '$select=*&$expand=AllProperties');
+        
+
+        $.when(d1, d2).then(function (d1, d2) {
             console.log('Bootstrap ' + appName)
             mb.user = d1;
             mb.web = d2[0].d;
