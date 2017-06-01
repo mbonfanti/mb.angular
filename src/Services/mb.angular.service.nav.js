@@ -154,11 +154,24 @@
 
             deferred.resolve(nav);
         }),
-        Function.createDelegate(this, function (sender, args) {
-            console.log(args.get_message());
-            deferred.reject(false);
-        }));
+            Function.createDelegate(this, function (sender, args) {
+                console.log(args.get_message());
+                deferred.reject(false);
+            }));
         return deferred;
+    }
+    factory.getSiteHomePageRest = function (w) {
+        var deferred = $q.defer();
+        var promise = baseSvc.getRestFilter(w + '/_api/web/rootfolder?$select=WelcomePage');
+
+        $q.all(promise)
+            .then(function (data) {
+                deferred.resolve(data);
+            }, function (error) {
+                deferred.reject(error);
+            });
+
+        return deferred.promise;
     }
 
     factory.getSiteHomePage = function (w) {
@@ -190,21 +203,21 @@
         var pr2 = factory.getSiteHomePage(w)
 
         $q.all([pr1, pr2])
-        .then(function (data) {
-            var pages = data[0].data.d.results;
-            for (var i = 0; i < pages.length; i++) {
-                if (pages[i].FileRef.indexOf(data[1]) === -1) {
-                    pages[i].isHome = false
-                } else {
-                    pages[i].isHome = true
+            .then(function (data) {
+                var pages = data[0].data.d.results;
+                for (var i = 0; i < pages.length; i++) {
+                    if (pages[i].FileRef.indexOf(data[1]) === -1) {
+                        pages[i].isHome = false
+                    } else {
+                        pages[i].isHome = true
+                    }
                 }
-            }
-            deferred.resolve(pages);
+                deferred.resolve(pages);
 
-        }, function (err) {
-            console.log(err)
-            deferred.reject(err);
-        })
+            }, function (err) {
+                console.log(err)
+                deferred.reject(err);
+            })
         return deferred.promise;
     }
 
