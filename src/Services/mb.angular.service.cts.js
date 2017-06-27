@@ -3,7 +3,7 @@
     var factory = {};
 
     factory.headers = {
-        "accept": "application/json;odata=verbose"
+        "accept": "application/json;odata=verbose" 
     };
 
 

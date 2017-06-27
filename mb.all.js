@@ -1080,7 +1080,7 @@ angular.module("mb.angular").factory("ctsSvc", ['$q', '$http', 'commonSvc', func
     var factory = {};
 
     factory.headers = {
-        "accept": "application/json;odata=verbose"
+        "accept": "application/json;odata=verbose" 
     };
 
 
