@@ -945,11 +945,13 @@ angular.module("mb.angular").factory("commonSvc", ['baseSvc', '$http', function 
     //    return $http.get(exportUrl);
     //}
     factory.resultsToObjectAll = function (ris,key) {
-        var temp = {}
+        var arr = []
         for (i = 0; i < ris.length; i++) {
+            var temp = {}
             temp[ris[i][key]] = ris[i]
+            arr.push(temp)
         }
-        return temp;
+        return arr;
     }
 
     factory.resultsToObject = function (ris,key,value) {
@@ -3447,5 +3449,5 @@ angular.module("mb.angular.components").directive('showOnRowHover', function () 
 
 //});
 angular.module('mb.angular.templates', []).run(['$templateCache', function($templateCache) {$templateCache.put('Bookmark/Bookmarks.html','<div class="mcl-add-bookmark pull-right">\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="$ctrl.isFollow" ng-click="$ctrl.follow(false)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon mcl-full-icon"></span>\r\n        <span class="mcl-bookmark-txt">remove bookmark</span>\r\n    </a>\r\n    <a href="#" class="togglable-icon-bookmark" ng-show="!$ctrl.isFollow" ng-click="$ctrl.follow(true)">\r\n        <span class="mcl-glyphicons-icon mcl-icon-add-bookmark togglable-icon"></span>\r\n        <span class="mcl-bookmark-txt">add bookmark</span>\r\n    </a>\r\n</div>');
-$templateCache.put('UserBadge/userBadge.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');
-$templateCache.put('Like/Like.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');}]);
+$templateCache.put('Like/Like.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');
+$templateCache.put('UserBadge/userBadge.html','<span class="mcl-action">\r\n    <span ng-if="$ctrl.isLike" ng-click="$ctrl.like(0)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like mcl-full-icon"></i>\r\n        Unlike\r\n    </span>\r\n    <span ng-if="!$ctrl.isLike" ng-click="$ctrl.like(1)" class="pointer">\r\n        <i class="mcl-glyphicons-icon mcl-icon-like"></i>\r\n        Like\r\n    </span>\r\n    ({{ $ctrl.obj.LikesCount }})\r\n</span>  ');}]);
