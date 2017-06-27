@@ -8,7 +8,7 @@
 
 
     factory.getByGroup = function (w, g) {
-        var restUrl = w + "/_api/web/AvailableContentTypes?$filter=Group eq '_Interventi%27" + g + "'";
+        var restUrl = w + "/_api/web/AvailableContentTypes?$filter=Group eq '" + g + "'";
         return $http({
             type: "GET",
             url: restUrl,
