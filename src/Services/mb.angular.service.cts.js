@@ -7,10 +7,8 @@
     };
 
 
-
-    // Work With list Items
     factory.getByGroup = function (w, g) {
-        var restUrl = w + "/_api/web/AvailableContentTypes?" + g;
+        var restUrl = w + "/_api/web/AvailableContentTypes?$filter=Group eq '_Interventi%27" + g + "'";
         return $http({
             type: "GET",
             url: restUrl,
@@ -19,14 +17,12 @@
     }
 
 
-
-    // Work With Folders
     factory.getByGroupObj = function (w, g) {
         var deferred = jQuery.Deferred();
 
         factory.getByGroup(w, g)
             .then(function (data) {
-                var temp = commonSvc.resultsToObjectAll(data.data.d.results,'Title')
+                var temp = commonSvc.resultsToObjectAll(data.data.d.results,'Name')
                     deferred.resolve(temp);
                 },
                 function (error) {
