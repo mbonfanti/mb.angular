@@ -24,7 +24,7 @@
     factory.getByGroupObj = function (w, g) {
         var deferred = jQuery.Deferred();
 
-        factory.getByGroup(tempUrl)
+        factory.getByGroup(w, g)
             .then(function (data) {
                 var temp = commonSvc.resultsToObjectAll(data.data.d.results,'Title')
                     deferred.resolve(temp);
