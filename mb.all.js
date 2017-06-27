@@ -546,65 +546,6 @@ angular.module("mb.angular").filter('cut', function () {
     };
 });
 
-angular.module("mb.angular").factory("configSvc", ['$q', '$http', "baseSvc", "commonSvc", function ($q, $http, baseSvc, commonSvc) {
-    var factory = {};
-
-    factory.headers = { "accept": "application/json;odata=verbose" };
-    // CONSTRUCT CONFIG
-    factory.config = "";
-    factory.getConfig = function (u) {
-        var deferred = $q.defer();
-
-        if (factory.config === "") {
-            baseSvc.getListFilter(u, 'Config', '')
-            .then(
-                function (data) {
-                    var ris = data.data.d.results;
-
-                    var conf = {}
-                   
-                    factory.config = commonSvc.resultsToObject(ris, 'Title', 'Value');
-                    deferred.resolve(factory.config);
-                },
-                 function (err) {
-                     deferred.reject()
-                 })
-
-        } else {
-            deferred.resolve(factory.config);
-        }
-
-        return deferred.promise;
-    }
-    factory.getConfigFilter = function (u, t) {
-        var deferred = $q.defer();
-        factory.getConfig(u).then(
-            function (values) {
-                 var temp = factory.getConfigTerm(factory.config, t)
-                 if (temp == "") {
-                     deferred.reject('Non trovato');
-                 } else {
-                     deferred.resolve(temp);
-                 }
-             },
-             function (err) {
-                 deferred.reject()
-             })
-        
-        return deferred.promise;
-    }
-    factory.getConfigTerm = function (c, t) {
-        var result = c[t] === undefined;
-        if (!result) {
-            return c[t]
-        } else {
-            return "";
-        }
-    }
-
-    return factory;
-}])
-
 angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $http) {
 
     var factory = {};
@@ -896,6 +837,27 @@ angular.module("mb.angular").factory("baseSvc", ['$q', '$http', function ($q, $h
 
         return deferred.promise;
     }
+    factory.getListAsObjParam = function (u, l, param) {
+        var deferred = $q.defer();
+        jQuery.ajax({
+            url: u + "/_api/web/lists/getByTitle('" + l + "')/items",
+            type: 'GET',
+            headers: { 'accept': 'application/json;odata=verbose' },
+            success: function (data) {
+                var ris = data.d.results;
+                var conf = {}
+                for (i = 0; i < ris.length; i++) {
+                    conf[ris[i].Title] = ris[i][param]
+                }
+                deferred.resolve(conf);
+            },
+            error: function (data) {
+                deferred.reject(data);
+            }
+        });
+
+        return deferred.promise;
+    }
     // Sono stati spostati nel webSvc
     factory.getWebProperty = function (w, p) {
         return $http({
@@ -982,6 +944,13 @@ angular.module("mb.angular").factory("commonSvc", ['baseSvc', '$http', function 
     //factory.getWeb = function (exportUrl) {
     //    return $http.get(exportUrl);
     //}
+    factory.resultsToObjectAll = function (ris,key) {
+        var temp = {}
+        for (i = 0; i < ris.length; i++) {
+            temp[ris[i][key]] = ris[i]
+        }
+        return temp;
+    }
 
     factory.resultsToObject = function (ris,key,value) {
         var temp = {}
@@ -1043,6 +1012,109 @@ angular.module("mb.angular").factory("commonSvc", ['baseSvc', '$http', function 
     }
 
     // Utility
+    return factory;
+}])
+angular.module("mb.angular").factory("configSvc", ['$q', '$http', "baseSvc", "commonSvc", function ($q, $http, baseSvc, commonSvc) {
+    var factory = {};
+
+    factory.headers = { "accept": "application/json;odata=verbose" };
+    // CONSTRUCT CONFIG
+    factory.config = "";
+    factory.getConfig = function (u) {
+        var deferred = $q.defer();
+
+        if (factory.config === "") {
+            baseSvc.getListFilter(u, 'Config', '')
+            .then(
+                function (data) {
+                    var ris = data.data.d.results;
+
+                    var conf = {}
+                   
+                    factory.config = commonSvc.resultsToObject(ris, 'Title', 'Value');
+                    deferred.resolve(factory.config);
+                },
+                 function (err) {
+                     deferred.reject()
+                 })
+
+        } else {
+            deferred.resolve(factory.config);
+        }
+
+        return deferred.promise;
+    }
+    factory.getConfigFilter = function (u, t) {
+        var deferred = $q.defer();
+        factory.getConfig(u).then(
+            function (values) {
+                 var temp = factory.getConfigTerm(factory.config, t)
+                 if (temp == "") {
+                     deferred.reject('Non trovato');
+                 } else {
+                     deferred.resolve(temp);
+                 }
+             },
+             function (err) {
+                 deferred.reject()
+             })
+        
+        return deferred.promise;
+    }
+    factory.getConfigTerm = function (c, t) {
+        var result = c[t] === undefined;
+        if (!result) {
+            return c[t]
+        } else {
+            return "";
+        }
+    }
+
+    return factory;
+}])
+
+angular.module("mb.angular").factory("ctsSvc", ['$q', '$http', 'commonSvc', function ($q, $http, commonSvc) {
+
+    var factory = {};
+
+    factory.headers = {
+        "accept": "application/json;odata=verbose"
+    };
+
+
+
+    // Work With list Items
+    factory.getByGroup = function (w, g) {
+        var restUrl = w + "/_api/web/AvailableContentTypes?" + g;
+        return $http({
+            type: "GET",
+            url: restUrl,
+            headers: factory.headers
+        });
+    }
+
+
+
+    // Work With Folders
+    factory.getByGroupObj = function (w, g) {
+        var deferred = jQuery.Deferred();
+
+        factory.getByGroup(tempUrl)
+            .then(function (data) {
+                var temp = commonSvc.resultsToObjectAll(data.data.d.results,'Title')
+                    deferred.resolve(temp);
+                },
+                function (error) {
+
+                    deferred.reject(error);
+
+
+                });
+
+        return deferred;
+
+    }
+
     return factory;
 }])
 angular.module("mb.angular").factory("fileSvc", ['baseSvc', '$http', 'itemsSvc', function (baseSvc, $http, itemsSvc) {
@@ -2199,11 +2271,24 @@ angular.module("mb.angular").factory("navSvc", ['baseSvc', '$q', '$http', functi
 
             deferred.resolve(nav);
         }),
-        Function.createDelegate(this, function (sender, args) {
-            console.log(args.get_message());
-            deferred.reject(false);
-        }));
+            Function.createDelegate(this, function (sender, args) {
+                console.log(args.get_message());
+                deferred.reject(false);
+            }));
         return deferred;
+    }
+    factory.getSiteHomePageRest = function (w) {
+        var deferred = $q.defer();
+        var promise = baseSvc.getRestFilter(w + '/_api/web/rootfolder?$select=WelcomePage');
+
+        $q.all(promise)
+            .then(function (data) {
+                deferred.resolve(data);
+            }, function (error) {
+                deferred.reject(error);
+            });
+
+        return deferred.promise;
     }
 
     factory.getSiteHomePage = function (w) {
@@ -2235,21 +2320,21 @@ angular.module("mb.angular").factory("navSvc", ['baseSvc', '$q', '$http', functi
         var pr2 = factory.getSiteHomePage(w)
 
         $q.all([pr1, pr2])
-        .then(function (data) {
-            var pages = data[0].data.d.results;
-            for (var i = 0; i < pages.length; i++) {
-                if (pages[i].FileRef.indexOf(data[1]) === -1) {
-                    pages[i].isHome = false
-                } else {
-                    pages[i].isHome = true
+            .then(function (data) {
+                var pages = data[0].data.d.results;
+                for (var i = 0; i < pages.length; i++) {
+                    if (pages[i].FileRef.indexOf(data[1]) === -1) {
+                        pages[i].isHome = false
+                    } else {
+                        pages[i].isHome = true
+                    }
                 }
-            }
-            deferred.resolve(pages);
+                deferred.resolve(pages);
 
-        }, function (err) {
-            console.log(err)
-            deferred.reject(err);
-        })
+            }, function (err) {
+                console.log(err)
+                deferred.reject(err);
+            })
         return deferred.promise;
     }
 

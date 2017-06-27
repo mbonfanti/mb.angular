@@ -289,6 +289,27 @@
 
         return deferred.promise;
     }
+    factory.getListAsObjParam = function (u, l, param) {
+        var deferred = $q.defer();
+        jQuery.ajax({
+            url: u + "/_api/web/lists/getByTitle('" + l + "')/items",
+            type: 'GET',
+            headers: { 'accept': 'application/json;odata=verbose' },
+            success: function (data) {
+                var ris = data.d.results;
+                var conf = {}
+                for (i = 0; i < ris.length; i++) {
+                    conf[ris[i].Title] = ris[i][param]
+                }
+                deferred.resolve(conf);
+            },
+            error: function (data) {
+                deferred.reject(data);
+            }
+        });
+
+        return deferred.promise;
+    }
     // Sono stati spostati nel webSvc
     factory.getWebProperty = function (w, p) {
         return $http({

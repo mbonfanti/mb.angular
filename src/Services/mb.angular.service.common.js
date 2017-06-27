@@ -4,6 +4,13 @@ angular.module("mb.angular").factory("commonSvc", ['baseSvc', '$http', function 
     //factory.getWeb = function (exportUrl) {
     //    return $http.get(exportUrl);
     //}
+    factory.resultsToObjectAll = function (ris,key) {
+        var temp = {}
+        for (i = 0; i < ris.length; i++) {
+            temp[ris[i][key]] = ris[i]
+        }
+        return temp;
+    }
 
     factory.resultsToObject = function (ris,key,value) {
         var temp = {}
